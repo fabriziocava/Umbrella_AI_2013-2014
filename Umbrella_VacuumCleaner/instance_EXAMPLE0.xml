@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vacuum_istance>
+  <board>
+    <size>10</size>
+    <tile_state x="0" y="0">dirty</tile_state>
+    <tile_state x="1" y="9">obstacle</tile_state>
+    <tile_state x="2" y="5">obstacle</tile_state>
+    <tile_state x="2" y="6">obstacle</tile_state>
+    <tile_state x="2" y="7">obstacle</tile_state>
+    <tile_state x="2" y="8">obstacle</tile_state>
+    <tile_state x="2" y="9">obstacle</tile_state>
+    <tile_state x="3" y="9">obstacle</tile_state>
+    <tile_state x="4" y="0">obstacle</tile_state>
+    <tile_state x="4" y="1">obstacle</tile_state>
+    <tile_state x="4" y="2">obstacle</tile_state>
+    <tile_state x="4" y="3">obstacle</tile_state>
+    <tile_state x="4" y="4">obstacle</tile_state>
+    <tile_state x="4" y="5">obstacle</tile_state>
+    <tile_state x="4" y="6">obstacle</tile_state>
+    <tile_state x="4" y="7">obstacle</tile_state>
+    <tile_state x="4" y="9">obstacle</tile_state>
+    <tile_state x="5" y="0">obstacle</tile_state>
+    <tile_state x="6" y="0">obstacle</tile_state>
+    <tile_state x="6" y="2">obstacle</tile_state>
+    <tile_state x="6" y="3">obstacle</tile_state>
+    <tile_state x="6" y="4">obstacle</tile_state>
+    <tile_state x="6" y="5">obstacle</tile_state>
+    <tile_state x="6" y="6">obstacle</tile_state>
+    <tile_state x="6" y="7">obstacle</tile_state>
+    <tile_state x="6" y="8">obstacle</tile_state>
+    <tile_state x="6" y="9">obstacle</tile_state>
+    <tile_state x="7" y="0">obstacle</tile_state>
+    <tile_state x="8" y="0">obstacle</tile_state>
+    <tile_state x="8" y="1">obstacle</tile_state>
+    <tile_state x="8" y="2">obstacle</tile_state>
+    <tile_state x="8" y="3">obstacle</tile_state>
+    <tile_state x="8" y="4">obstacle</tile_state>
+    <tile_state x="8" y="5">obstacle</tile_state>
+    <tile_state x="8" y="6">obstacle</tile_state>
+    <tile_state x="8" y="7">obstacle</tile_state>
+    <tile_state x="8" y="8">obstacle</tile_state>
+    <tile_state x="9" y="8">obstacle</tile_state>
+  </board>
+  <action_costs>
+    <up>1.0</up>
+    <down>1.0</down>
+    <left>1.0</left>
+    <right>1.0</right>
+    <suck>2.0</suck>
+  </action_costs>
+  <agent>
+    <x>9</x>
+    <y>9</y>
+    <energy>35.0</energy>
+  </agent>
+  <base>
+    <x>0</x>
+    <y>9</y>
+  </base>
+</vacuum_istance>

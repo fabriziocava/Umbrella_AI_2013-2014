@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<vacuum_instance>
+	<board>
+		<size>8</size>
+		<tile_state x="1" y="1">dirty</tile_state>
+		<tile_state x="1" y="2">dirty</tile_state>
+		<tile_state x="1" y="3">dirty</tile_state>
+		<tile_state x="1" y="4">dirty</tile_state>
+		<tile_state x="1" y="6">dirty</tile_state>
+		<tile_state x="1" y="5">obstacle</tile_state>
+		<tile_state x="2" y="5">obstacle</tile_state>
+		<tile_state x="1" y="4">obstacle</tile_state>
+		<tile_state x="2" y="1">dirty</tile_state>
+		<tile_state x="2" y="2">dirty</tile_state>
+		<tile_state x="2" y="3">dirty</tile_state>
+		<tile_state x="2" y="4">dirty</tile_state>
+		<tile_state x="2" y="6">dirty</tile_state>
+	</board>
+
+	<action_costs>
+		<up>1</up>
+		<down>2</down>
+		<right>3</right>
+		<left>4</left>
+		<suck>5</suck>
+	</action_costs>
+	<agent>
+		<x>2</x>
+		<y>3</y>
+		<energy>128</energy>
+	</agent>
+	<base>
+		<x>4</x>
+		<y>4</y>
+	</base>
+</vacuum_instance>
