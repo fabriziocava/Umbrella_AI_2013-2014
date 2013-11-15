@@ -41,7 +41,7 @@ public class VacuumController extends AgentAppController {
 	public void prepare(final String changedSelector) {
 		final AgentAppFrame.SelectionState selState = this.frame.getSelection();
 		final Instance i = new Instance();
-		i.buildINstanceJDom("instance_2.xml");
+		i.buildINstanceJDom("PB_instance2.xml");
 		this.env = null;
 		this.agent = null;
 		switch (selState.getValue(VacuumFrame.AGENT_SEL)) {

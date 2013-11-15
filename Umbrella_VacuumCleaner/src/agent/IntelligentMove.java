@@ -243,27 +243,27 @@ public class IntelligentMove {
 					index=i;
 				}
 			}
-			dirtyList.remove(index);
-			de_list = (ArrayList<DefaultEdge>) dsp.getPath().getEdgeList();			
-			for(DefaultEdge de : de_list) {
-				Point pTarget = graph.getEdgeTarget(de);
-				if(pTarget.equals(currentPoint))
-					pTarget = graph.getEdgeSource(de);
-				list.add(pTarget);
-				currentPoint = pTarget;
+			dspReturnToBase = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, vep.getBaseLocation());
+			if((dsp.getPathLength()+dspReturnToBase.getPathLength())>=energy) {
+				dirtyList = new ArrayList<Point>();
+			}
+			else {
+				dirtyList.remove(index);
+				de_list = (ArrayList<DefaultEdge>) dsp.getPath().getEdgeList();			
+				for(DefaultEdge de : de_list) {
+					Point pTarget = graph.getEdgeTarget(de);
+					if(pTarget.equals(currentPoint))
+						pTarget = graph.getEdgeSource(de);
+					list.add(pTarget);
+					currentPoint = pTarget;
+				}
 				energy-=dsp.getPathLength();
 				energy-=costSuck;
-			}
-			/*
-			 * CONTROLLARE
-			 */
-			dspReturnToBase = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, vep.getBaseLocation());
-			if(!((dsp.getPathLength()+costSuck+dspReturnToBase.getPathLength())<energy)) {
-				dirtyList = new ArrayList<Point>();
 			}
 		}
 		returnToBase(list, currentPoint);
 		//System.err.println(list);
+		//System.err.println(list.size());
 		return list;
 	}
 	
