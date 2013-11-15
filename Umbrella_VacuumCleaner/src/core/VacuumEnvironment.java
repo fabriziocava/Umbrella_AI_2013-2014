@@ -60,7 +60,7 @@ public class VacuumEnvironment extends AbstractEnvironment {
 	@Override
 	public EnvironmentState executeAction(final Agent agent,
 			final Action agentAction) {
-			
+
 		if (this.envState.getActionFromName("suck").equals(agentAction)) {
 			if (LocationState.Dirty.equals(this.envState
 					.getLocationState(this.envState.getAgentLocation(agent)))) {
@@ -120,10 +120,18 @@ public class VacuumEnvironment extends AbstractEnvironment {
 		return super.isDone() || this.isDone;
 	}
 
-	protected void updatePerformanceMeasure(final Agent forAgent) {
-		// TODO Update with our PM
-		this.performanceMeasures.put(forAgent,
-				this.getPerformanceMeasure(forAgent));
-	}
+	protected void updatePerformanceMeasure(final Agent agent) {
 
+		final double ET = this.envState.getCurrentEnergy(agent);
+		final double BdT = this.envState.getDistanceFromBase(agent);
+		final double E0 = this.envState.getInitialEnergy();
+		final double CT = this.envState.getCleanedTiles(agent);
+		final double D0 = this.envState.getDirtyInitialTiles();
+
+		final Double performanceMeasure = Math.ceil((ET - BdT + 1) / (E0 + 1))
+				* (CT + 1) / (D0 + 1) * (1 + (ET + 1) / (E0 + 1));
+
+		this.performanceMeasures.put(agent, performanceMeasure);
+
+	}
 }

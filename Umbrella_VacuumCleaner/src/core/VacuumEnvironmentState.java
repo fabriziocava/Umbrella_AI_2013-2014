@@ -29,6 +29,8 @@ public class VacuumEnvironmentState implements EnvironmentState,
 	private final Map<Agent, Double> currentEnergy;
 	private final Map<Action, Double> actionEnergyCosts;
 	private int N;
+	private int dirtyInitialTiles;
+	private int cleanedTiles;
 
 	/**
 	 * Constructor
@@ -41,6 +43,13 @@ public class VacuumEnvironmentState implements EnvironmentState,
 		this.actionEnergyCosts = new LinkedHashMap<Action, Double>();
 
 		this.loadFromBean(instanceBean, a);
+
+		this.dirtyInitialTiles = 0;
+		for (final Point point : this.state.keySet())
+			if (this.state.get(point) == LocationState.Dirty)
+				this.dirtyInitialTiles++;
+
+		this.cleanedTiles = 0;
 
 	}
 
@@ -100,8 +109,21 @@ public class VacuumEnvironmentState implements EnvironmentState,
 		return this.baseLocation;
 	}
 
+	public double getCleanedTiles(final Agent agent) {
+		return this.cleanedTiles;
+	}
+
 	public Double getCurrentEnergy(final Agent agent) {
 		return this.currentEnergy.get(agent);
+	}
+
+	public double getDirtyInitialTiles() {
+		return this.dirtyInitialTiles;
+	}
+
+	public double getDistanceFromBase(final Agent agent) {
+		// FIXME return minimum path
+		return 0;
 	}
 
 	public double getEnergyCost(final Action action) {
@@ -191,6 +213,9 @@ public class VacuumEnvironmentState implements EnvironmentState,
 	 */
 	public void setLocationState(final Point location,
 			final VacuumEnvironment.LocationState s) {
+		if (this.state.get(location) == LocationState.Dirty
+				&& s == LocationState.Clean)
+			this.cleanedTiles++;
 		this.state.put(location, s);
 	}
 
