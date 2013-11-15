@@ -61,7 +61,6 @@ public class IntelligentMove {
 				p2=new Point(i,j+1);
 				if(!(vep.getState().get(p1).equals(LocationState.Obstacle)||vep.getState().get(p2).equals(LocationState.Obstacle)))
 					graph.addEdge(p1, p2);
-				//System.err.println("("+j+","+i+")"+"-->"+"("+(j+1)+","+i+")");
 				p1=new Point(j,i);
 				p2=new Point(j+1,i);
 				if(!(vep.getState().get(p1).equals(LocationState.Obstacle)||vep.getState().get(p2).equals(LocationState.Obstacle)))
@@ -234,7 +233,7 @@ public class IntelligentMove {
 		list.add(currentPoint);
 		int index;
 		double energy = vep.getInitialEnergy();
-		while(dirtyList.size()!=0) {	
+		while(dirtyList.size()!=0) {
 			index=0;
 			dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, dirtyList.get(index));
 			for(int i=0; i<dirtyList.size(); i++) {
@@ -244,22 +243,23 @@ public class IntelligentMove {
 					index=i;
 				}
 			}
-			dspReturnToBase = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, vep.getBaseLocation());
-			if((dsp.getPathLength()+dspReturnToBase.getPathLength())>energy) {
-				dirtyList = new ArrayList<Point>();
+			dirtyList.remove(index);
+			de_list = (ArrayList<DefaultEdge>) dsp.getPath().getEdgeList();			
+			for(DefaultEdge de : de_list) {
+				Point pTarget = graph.getEdgeTarget(de);
+				if(pTarget.equals(currentPoint))
+					pTarget = graph.getEdgeSource(de);
+				list.add(pTarget);
+				currentPoint = pTarget;
+				energy-=dsp.getPathLength();
+				energy-=costSuck;
 			}
-			else {
-				dirtyList.remove(index);
-				de_list = (ArrayList<DefaultEdge>) dsp.getPath().getEdgeList();			
-				for(DefaultEdge de : de_list) {
-					Point pTarget = graph.getEdgeTarget(de);
-					if(pTarget.equals(currentPoint))
-						pTarget = graph.getEdgeSource(de);
-					list.add(pTarget);
-					currentPoint = pTarget;
-					energy-=dsp.getPathLength();
-					energy-=costSuck;
-				}
+			/*
+			 * CONTROLLARE
+			 */
+			dspReturnToBase = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, vep.getBaseLocation());
+			if(!((dsp.getPathLength()+costSuck+dspReturnToBase.getPathLength())<energy)) {
+				dirtyList = new ArrayList<Point>();
 			}
 		}
 		returnToBase(list, currentPoint);

@@ -44,7 +44,7 @@
   <agent>
     <x>7</x>
     <y>6</y>
-    <energy>100.0</energy>
+    <energy>1000.0</energy>
   </agent>
   <base>
     <x>0</x>
