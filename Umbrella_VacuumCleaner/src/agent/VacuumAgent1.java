@@ -36,7 +36,7 @@ public class VacuumAgent1 extends AbstractAgent {
 					firstStep=false;
 				}
 				int moveInt=0;
-				while(listMovements.size()!=0) {
+				while(listMovements.size()!=0 && vep.getCurrentEnergy()>0) {
 					moveInt=listMovements.get(0);
 					final Iterator<Action> iterator = actionsKeySet.iterator();
 					for (int i = 0; i < moveInt; i++) {
@@ -45,8 +45,8 @@ public class VacuumAgent1 extends AbstractAgent {
 					listMovements.remove(0);
 					return iterator.next();
 				}
+				//System.out.println(vep.getCurrentEnergy());
 				return NoOpAction.NO_OP;
-				//return actionsKeySet.iterator().next();
 			}
 		};
 	}

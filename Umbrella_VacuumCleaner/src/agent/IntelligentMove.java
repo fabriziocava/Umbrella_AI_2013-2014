@@ -244,7 +244,10 @@ public class IntelligentMove {
 				}
 			}
 			dspReturnToBase = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, vep.getBaseLocation());
-			if((dsp.getPathLength()+dspReturnToBase.getPathLength())>=energy) {
+			/*if(energy-(dsp.getPathLength()+dspReturnToBase.getPathLength()+costSuck)>=0)
+				dirtyList = new ArrayList<Point>();
+			*/
+			if((dsp.getPathLength()+dspReturnToBase.getPathLength()+costSuck)>=energy) {
 				dirtyList = new ArrayList<Point>();
 			}
 			else {
