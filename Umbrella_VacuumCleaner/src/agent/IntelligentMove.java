@@ -83,6 +83,7 @@ public class IntelligentMove {
 		return list;
 	}
 	
+	@Deprecated
 	public int move() {
 		int moveInt;
 		if(vep.getState().get(vep.getAgentLocation()).equals(LocationState.Dirty))
@@ -108,6 +109,7 @@ public class IntelligentMove {
 		return list;
 	}
 	
+	@Deprecated
 	private int nextMoveNeighborhood() {
 		int move=0;
 		while(move==0) {
@@ -149,6 +151,7 @@ public class IntelligentMove {
 		return move;
 	}
 	
+	@Deprecated
 	private int nextMove_dijkstra() {
 		int move=0;
 		ArrayList<Point> dirtyList = getDirtyCell();
@@ -167,14 +170,14 @@ public class IntelligentMove {
 			if(dsp.getPathLength()==1.0)
 				move = neighborhood(dsp.getPath().getStartVertex(), dsp.getPath().getEndVertex());
 			else {
-				System.err.println(dsp.getPath().toString());
+				//System.err.println(dsp.getPath().toString());
 				ArrayList<DefaultEdge> de_list = (ArrayList<DefaultEdge>) dsp.getPath().getEdgeList();			
 				for(DefaultEdge de : de_list) {
 					Point pTarget = graph.getEdgeTarget(de);
 					if(pTarget.equals(vep.getAgentLocation()))
 						pTarget = graph.getEdgeSource(de);
 					move = neighborhood(vep.getAgentLocation(), pTarget);
-					System.err.println("MOVE F: " + move);
+					//System.err.println("MOVE F: " + move);
 				}
 			}
 		}
