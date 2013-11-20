@@ -42,7 +42,7 @@ public class VacuumController extends AgentAppController {
 		final AgentAppFrame.SelectionState selState = this.frame.getSelection();
 		final Instance i = new Instance();
 		//i.buildINstanceJDom("instance_EXAMPLE.xml");
-		i.buildINstanceJDom(".//environment//PB_instance2.xml");
+		i.buildINstanceJDom(".//environment//instance_EXAMPLE_50x50.xml");
 		this.env = null;
 		this.agent = null;
 		switch (selState.getValue(VacuumFrame.AGENT_SEL)) {
@@ -67,7 +67,7 @@ public class VacuumController extends AgentAppController {
 		logger.log("<simulation-log>");
 		try {
 			while (!this.env.isDone() && !this.frame.simulationPaused()) {
-				Thread.sleep(500);
+				Thread.sleep(20);
 				this.env.step();
 			}
 		} catch (final InterruptedException e) {

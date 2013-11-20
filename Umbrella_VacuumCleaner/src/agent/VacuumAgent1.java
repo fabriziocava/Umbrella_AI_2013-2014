@@ -45,7 +45,7 @@ public class VacuumAgent1 extends AbstractAgent {
 					listMovements.remove(0);
 					return iterator.next();
 				}
-				//System.out.println(vep.getCurrentEnergy());
+				System.out.println("ENERGY: " + vep.getCurrentEnergy());
 				return NoOpAction.NO_OP;
 			}
 		};

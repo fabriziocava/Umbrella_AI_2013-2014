@@ -130,7 +130,13 @@ public class VacuumEnvironment extends AbstractEnvironment {
 
 		final Double performanceMeasure = Math.ceil((ET - BdT + 1) / (E0 + 1))
 				* (CT + 1) / (D0 + 1) * (1 + (ET + 1) / (E0 + 1));
-
+		
+		/*
+		Double performance2 = CT + ET/E0 ;
+		if(BdT==0) {
+			performance2+= (D0+1);
+		}
+		*/
 		this.performanceMeasures.put(agent, performanceMeasure);
 
 	}

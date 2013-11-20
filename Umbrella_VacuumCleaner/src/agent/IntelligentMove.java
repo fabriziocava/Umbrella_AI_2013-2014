@@ -29,6 +29,10 @@ public class IntelligentMove {
 	private int n;
 	private UndirectedGraph<Point, DefaultEdge> graph;
 	private double costSuck;
+	private boolean isReturnToBase;
+	private ArrayList<Point> listPoints;
+	private ArrayList<Integer> listMovements;
+	private ArrayList<Point> listDirtyCell;
 	
 	public IntelligentMove(LocalVacuumEnvironmentPercept vep) {
 		this.vep=vep;
@@ -42,6 +46,15 @@ public class IntelligentMove {
 		catch (Exception e) {
 			costSuck=2;
 		}
+		isReturnToBase = false;
+		listPoints = new ArrayList<Point>();
+		listMovements = new ArrayList<Integer>();
+		listDirtyCell = getDirtyCell();
+		calculatePath();
+	}
+	
+	private void calculatePath() {
+		addListPoints(vep.getAgentLocation());
 	}
 
 	
@@ -79,128 +92,17 @@ public class IntelligentMove {
 				if(vep.getState().get(p).equals(LocationState.Dirty))
 					list.add(p);
 			}
-		//System.out.println(list);
 		return list;
 	}
-	
-	@Deprecated
-	public int move() {
-		int moveInt;
-		if(vep.getState().get(vep.getAgentLocation()).equals(LocationState.Dirty))
-			moveInt=IntelligentMove.SUCK;
-		else {
-			//moveInt = new Random().nextInt(actionsKeySet.size());
-			moveInt = nextMove_dijkstra();
-		}
-		//System.err.println(vep.getAgentLocation());
-		return moveInt;
-	}
-	
-	public ArrayList<Integer> getListMovements() {
-		ArrayList<Integer> list = new ArrayList<Integer>();
-		ArrayList<Point> listPoints = getListPoints();
+		
+	private void addListMovements(ArrayList<Point> listPoints) {
 		for(int i=0; i<listPoints.size()-1; i++) {
-			if(vep.getState().get(listPoints.get(i)).equals(LocationState.Dirty))
-				list.add(IntelligentMove.SUCK);
-			list.add(neighborhood(listPoints.get(i), listPoints.get(i+1)));
-		}
-		//System.err.println(list.toString());
-		//list.add(IntelligentMove.NoOP);
-		return list;
-	}
-	
-	@Deprecated
-	private int nextMoveNeighborhood() {
-		int move=0;
-		while(move==0) {
-			move=new Random().nextInt(actionsKeySet.size());
-		}
-		/*
-		 * neighborhood
-		 */
-		double x = vep.getAgentLocation().getX();
-		double y = vep.getAgentLocation().getY();
-		double north=x-1;
-		if(north<0) 
-			north=0;
-		double south=x+1;
-		if(south==n)
-			south=n-1;
-		double west=y-1;
-		if(west<0)
-			west=0;
-		double east=y+1;
-		if(east==n)
-			east=n-1;
-		Point pN = new Point();
-		pN.setLocation(north, y);
-		Point pS = new Point();
-		pS.setLocation(south, y);
-		Point pW = new Point();
-		pW.setLocation(x, west);
-		Point pE = new Point();
-		pE.setLocation(x, east);
-		if(vep.getState().get(pN).equals(LocationState.Dirty))
-			move=IntelligentMove.UP;
-		else if(vep.getState().get(pS).equals(LocationState.Dirty))
-			move=IntelligentMove.DOWN;
-		else if(vep.getState().get(pW).equals(LocationState.Dirty))
-			move=IntelligentMove.LEFT;
-		else if(vep.getState().get(pE).equals(LocationState.Dirty))
-			move=IntelligentMove.RIGHT;
-		return move;
-	}
-	
-	@Deprecated
-	private int nextMove_dijkstra() {
-		int move=0;
-		ArrayList<Point> dirtyList = getDirtyCell();
-		if(dirtyList.size()==0 && vep.getAgentLocation().equals(vep.getBaseLocation())) {
-			move=IntelligentMove.NoOP;	
-		}
-		else if(dirtyList.size()!=0) {
-			DijkstraShortestPath<Point, DefaultEdge> dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, vep.getAgentLocation(), dirtyList.get(0));
-			DijkstraShortestPath<Point, DefaultEdge> newDsp;
-			for(Point dl : dirtyList) {
-				newDsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, vep.getAgentLocation(), dl);
-				if(newDsp.getPathLength()<dsp.getPathLength())
-					dsp=newDsp;
+			if(!isReturnToBase) {
+				if(vep.getState().get(listPoints.get(i)).equals(LocationState.Dirty))
+					listMovements.add(IntelligentMove.SUCK);
 			}
-			//System.out.println(dsp.getPath().getEndVertex());
-			if(dsp.getPathLength()==1.0)
-				move = neighborhood(dsp.getPath().getStartVertex(), dsp.getPath().getEndVertex());
-			else {
-				//System.err.println(dsp.getPath().toString());
-				ArrayList<DefaultEdge> de_list = (ArrayList<DefaultEdge>) dsp.getPath().getEdgeList();			
-				for(DefaultEdge de : de_list) {
-					Point pTarget = graph.getEdgeTarget(de);
-					if(pTarget.equals(vep.getAgentLocation()))
-						pTarget = graph.getEdgeSource(de);
-					move = neighborhood(vep.getAgentLocation(), pTarget);
-					//System.err.println("MOVE F: " + move);
-				}
-			}
+			listMovements.add(neighborhood(listPoints.get(i), listPoints.get(i+1)));
 		}
-		else {
-			/*
-			 * Come back to base
-			 * NOTA: il seguente codice è uguale a quello precente --> risorvere
-			 */
-			DijkstraShortestPath<Point, DefaultEdge> dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, vep.getAgentLocation(), vep.getBaseLocation());
-			if(dsp.getPathLength()==1.0)
-				move = neighborhood(dsp.getPath().getStartVertex(), dsp.getPath().getEndVertex());
-			else {
-				//System.err.println(dsp.getPath().toString());
-				ArrayList<DefaultEdge> de_list = (ArrayList<DefaultEdge>) dsp.getPath().getEdgeList();			
-				for(DefaultEdge de : de_list) {
-					Point pTarget = graph.getEdgeTarget(de);
-					if(pTarget.equals(vep.getAgentLocation()))
-						pTarget = graph.getEdgeSource(de);
-					move = neighborhood(vep.getAgentLocation(), graph.getEdgeTarget(de));				
-				}
-			}
-		}
-		return move;
 	}
 	
 	private int neighborhood(Point p1, Point p2) {
@@ -219,62 +121,54 @@ public class IntelligentMove {
 			move=IntelligentMove.RIGHT;
 		else if(p1_y>p2_y)
 			move=IntelligentMove.LEFT;
-		//System.err.println("Move: " + move);
-		//System.err.println("----");
 		return move;
 	}
 	
-	
-	public ArrayList<Point> getListPoints() {
-		ArrayList<Point> list = new ArrayList<Point>();
-		ArrayList<Point> dirtyList = getDirtyCell();
+	private void addListPoints(Point currentPoint) {
 		DijkstraShortestPath<Point, DefaultEdge> dsp;
 		DijkstraShortestPath<Point, DefaultEdge> newDsp;
 		DijkstraShortestPath<Point, DefaultEdge> dspReturnToBase;
 		ArrayList<DefaultEdge> de_list;
-		Point currentPoint = vep.getAgentLocation();
-		list.add(currentPoint);
+		listPoints.add(currentPoint);
 		int index;
 		double energy = vep.getInitialEnergy();
-		while(dirtyList.size()!=0) {
+		while(listDirtyCell.size()!=0) {
 			index=0;
-			dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, dirtyList.get(index));
-			for(int i=0; i<dirtyList.size(); i++) {
-				newDsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, dirtyList.get(i));
+			dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, listDirtyCell.get(index));
+			for(int i=0; i<listDirtyCell.size(); i++) {
+				newDsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, listDirtyCell.get(i));
 				if(newDsp.getPathLength()<dsp.getPathLength()) {
 					dsp=newDsp;
 					index=i;
 				}
 			}
 			dspReturnToBase = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, vep.getBaseLocation());
-			/*if(energy-(dsp.getPathLength()+dspReturnToBase.getPathLength()+costSuck)>=0)
-				dirtyList = new ArrayList<Point>();
-			*/
 			if((dsp.getPathLength()+dspReturnToBase.getPathLength()+costSuck)>=energy) {
-				dirtyList = new ArrayList<Point>();
+				listDirtyCell = new ArrayList<Point>();
 			}
 			else {
-				dirtyList.remove(index);
+				listDirtyCell.remove(index);
 				de_list = (ArrayList<DefaultEdge>) dsp.getPath().getEdgeList();			
 				for(DefaultEdge de : de_list) {
 					Point pTarget = graph.getEdgeTarget(de);
 					if(pTarget.equals(currentPoint))
 						pTarget = graph.getEdgeSource(de);
-					list.add(pTarget);
+					listPoints.add(pTarget);
 					currentPoint = pTarget;
 				}
 				energy-=dsp.getPathLength();
 				energy-=costSuck;
 			}
 		}
-		returnToBase(list, currentPoint);
-		//System.err.println(list);
-		//System.err.println(list.size());
-		return list;
+		addListMovements(listPoints);
+		listPoints = new ArrayList<Point>();
+		returnToBase(currentPoint);
+		addListMovements(listPoints);
 	}
 	
-	
-	private void returnToBase(ArrayList<Point> list, Point currentPoint) {
+	private void returnToBase(Point currentPoint) {
+		isReturnToBase = true;
+		listPoints.add(currentPoint);
 		DijkstraShortestPath<Point, DefaultEdge> dsp;
 		ArrayList<DefaultEdge> de_list;
 		dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, vep.getBaseLocation());
@@ -283,10 +177,13 @@ public class IntelligentMove {
 			Point pTarget = graph.getEdgeTarget(de);
 			if(pTarget.equals(currentPoint))
 				pTarget = graph.getEdgeSource(de);
-			list.add(pTarget);
+			listPoints.add(pTarget);
 			currentPoint = pTarget;
 		}
 	}
-	
+
+	public ArrayList<Integer> getListMovements() {
+		return listMovements;
+	}
 	
 }
