@@ -1,5 +1,6 @@
 package core;
 
+import instanceXMLParser.CellLogicalState;
 import instanceXMLParser.Instance;
 
 import java.awt.Point;
@@ -22,22 +23,24 @@ import core.VacuumEnvironment.LocationState;
 public class VacuumEnvironmentState implements EnvironmentState,
 		FullyObservableVacuumEnvironmentPercept {
 
-	private final Map<Point, VacuumEnvironment.LocationState> state;
+	private final Map<Point, CellLogicalState> state;
 	private final Map<Agent, Point> agentLocations;
 	private Point baseLocation;
 	private double initialEnergy;
 	private final Map<Agent, Double> currentEnergy;
 	private final Map<Action, Double> actionEnergyCosts;
 	private int N;
+	private int M;
 	private int dirtyInitialTiles;
 	private int cleanedTiles;
+	private boolean movedLastTime;
 
 	/**
 	 * Constructor
 	 */
 	public VacuumEnvironmentState(final Instance instanceBean, final Agent a) {
 
-		this.state = new LinkedHashMap<Point, VacuumEnvironment.LocationState>();
+		this.state = new LinkedHashMap<Point, CellLogicalState>();
 		this.agentLocations = new LinkedHashMap<Agent, Point>();
 		this.currentEnergy = new LinkedHashMap<Agent, Double>();
 		this.actionEnergyCosts = new LinkedHashMap<Action, Double>();
@@ -46,10 +49,12 @@ public class VacuumEnvironmentState implements EnvironmentState,
 
 		this.dirtyInitialTiles = 0;
 		for (final Point point : this.state.keySet())
-			if (this.state.get(point) == LocationState.Dirty)
+			if (this.state.get(point).getLocState() == LocationState.Dirty)
 				this.dirtyInitialTiles++;
 
 		this.cleanedTiles = 0;
+
+		this.movedLastTime = false;
 
 	}
 
@@ -61,7 +66,7 @@ public class VacuumEnvironmentState implements EnvironmentState,
 	 */
 	public VacuumEnvironmentState(final VacuumEnvironmentState toCopyState) {
 
-		this.state = new LinkedHashMap<Point, VacuumEnvironment.LocationState>();
+		this.state = new LinkedHashMap<Point, CellLogicalState>();
 		this.agentLocations = new LinkedHashMap<Agent, Point>();
 		this.currentEnergy = new LinkedHashMap<Agent, Double>();
 		this.actionEnergyCosts = new LinkedHashMap<Action, Double>();
@@ -109,6 +114,10 @@ public class VacuumEnvironmentState implements EnvironmentState,
 		return this.baseLocation;
 	}
 
+	public CellLogicalState getCellLogicalState(final Point location) {
+		return this.state.get(location);
+	}
+
 	public double getCleanedTiles(final Agent agent) {
 		return this.cleanedTiles;
 	}
@@ -136,14 +145,23 @@ public class VacuumEnvironmentState implements EnvironmentState,
 
 	@Override
 	public VacuumEnvironment.LocationState getLocationState(final Point location) {
-		return this.state.get(location);
+		return this.state.get(location).getLocState();
+	}
+
+	public int getM() {
+		return this.M;
+	}
+
+	public double getMaxDistanceToTheBase() {
+		// FIXME return maximum of the distances from each tile to the base
+		return this.N * this.M;
 	}
 
 	public int getN() {
 		return this.N;
 	}
 
-	public Map<Point, VacuumEnvironment.LocationState> getState() {
+	public Map<Point, CellLogicalState> getState() {
 
 		return Collections.unmodifiableMap(this.state);
 
@@ -165,10 +183,15 @@ public class VacuumEnvironmentState implements EnvironmentState,
 		return hash;
 	}
 
+	public boolean isMovedLastTime() {
+		return this.movedLastTime;
+	}
+
 	private void loadFromBean(final Instance instanceBean, final Agent a) {
-		this.N = instanceBean.getSize();
+		this.N = instanceBean.getSize_n();
+		this.M = instanceBean.getSize_m();
 		for (int i = 0; i < this.N; i++)
-			for (int j = 0; j < this.N; j++)
+			for (int j = 0; j < this.M; j++)
 				this.state.put(new Point(i, j),
 						instanceBean.getBoardState()[i][j]);
 		this.baseLocation = new Point(instanceBean.getBasePos().getX(),
@@ -191,7 +214,7 @@ public class VacuumEnvironmentState implements EnvironmentState,
 			if (current_location.y > 0)
 				new_location.y--;
 		} else if (this.getActionFromName("right").equals(action)) {
-			if (current_location.y < this.N - 1)
+			if (current_location.y < this.M - 1)
 				new_location.y++;
 		} else if (this.getActionFromName("up").equals(action)) {
 			if (current_location.x > 0)
@@ -200,8 +223,12 @@ public class VacuumEnvironmentState implements EnvironmentState,
 			if (current_location.x < this.N - 1)
 				new_location.x++;
 
-		if (this.state.get(new_location) != LocationState.Obstacle)
+		if (!new_location.equals(current_location)
+				&& this.state.get(new_location).getLocState() != LocationState.Obstacle) {
 			this.agentLocations.put(agent, new_location);
+			this.movedLastTime = true;
+		} else
+			this.movedLastTime = false;
 
 	}
 
@@ -211,12 +238,31 @@ public class VacuumEnvironmentState implements EnvironmentState,
 	 * @param location
 	 * @param s
 	 */
-	public void setLocationState(final Point location,
-			final VacuumEnvironment.LocationState s) {
-		if (this.state.get(location) == LocationState.Dirty
-				&& s == LocationState.Clean)
+	public void setLocationState(final Point location, final CellLogicalState s) {
+		if (this.state.get(location).getLocState() == LocationState.Dirty
+				&& s.getLocState() == LocationState.Clean)
 			this.cleanedTiles++;
 		this.state.put(location, s);
+	}
+
+	public void suckTile(final Point location) {
+
+		final CellLogicalState cellLogicalState = this.state.get(location);
+
+		if (cellLogicalState.getLocState() == LocationState.Dirty) {
+			cellLogicalState
+					.setDirtyAmount(cellLogicalState.getDirtyAmount() - 1);
+
+			if (cellLogicalState.getDirtyAmount() <= 0) {
+				this.cleanedTiles++;
+				this.state.put(location, new CellLogicalState(0,
+						LocationState.Clean));
+			}
+
+		}
+
+		this.movedLastTime = false;
+
 	}
 
 	/**

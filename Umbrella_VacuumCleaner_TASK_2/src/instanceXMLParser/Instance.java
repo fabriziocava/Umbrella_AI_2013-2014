@@ -30,20 +30,18 @@ import core.VacuumEnvironment.LocationState;
 public class Instance {
 
 
-	//action order : up, down,left, right, suck
-
-	/**
-	 *
-	 */
 	protected Map<String,Double> actionCosts;
 
-	protected int size;
+	protected int size_n;
+	protected int size_m;
+	
 	protected double energy;
 
 	protected  Position agentPos;
 	protected  Position basePos;
 
-	protected LocationState[][] boardState;
+	protected CellLogicalState[][] boardState;
+	
 
 
 
@@ -78,29 +76,40 @@ public class Instance {
 			if(element.getName().equals("board")){
 				list1=element.getChildren();
 				for (Element element2 : list1) {
-					if(element2.getName().equals("size")){//size of the space
-						size= Integer.parseInt(element2.getText());
-						//inizializzo matrice
-						boardState= new LocationState[size][size];
-						for (int j = 0; j < boardState.length; j++) {
-							for (int k = 0; k < boardState.length; k++) {
-								boardState[j][k]=LocationState.Clean;
+					if(element2.getName().equals("size_n")){//size of the space
+						size_n= Integer.parseInt(element2.getText());
+					}else if(element2.getName().equals("size_m")){//size of the space
+						size_m= Integer.parseInt(element2.getText());
+						//inizializzo matrice solo dop aver letto le due dimensioni
+						//NOTA CHE SIZE_M E SIZE_N devono essere i primi elementi e in quell ordine!
+						boardState= new CellLogicalState[size_n][size_m];
+						for (int j = 0; j < size_n; j++) {
+							for (int k = 0; k < size_m; k++) {
+								boardState[j][k]=new CellLogicalState();
 							}
 						}
 
 					}else if (element2.getName().equals("tile_state")){//tile states
-						int x,y;
-						LocationState state = LocationState.Clean;
+						int x,y,value;
+						CellLogicalState state = new CellLogicalState();
 						String stateString;
 						x=Integer.parseInt(element2.getAttribute("x").getValue());
 						y=Integer.parseInt(element2.getAttribute("y").getValue());
-
+					
+						
 						stateString = element2.getText();
 
 						if(stateString.equals("obstacle")){
-							state = LocationState.Obstacle;
+							state.setLocState( LocationState.Obstacle);
 						}else if(stateString.equals("dirty")){
-							state = LocationState.Dirty;
+							state.setLocState( LocationState.Dirty);
+							value=1;
+							if(element2.getAttribute("value").getValue() != null){
+								value=Integer.parseInt(element2.getAttribute("value").getValue());
+							}
+							state.setDirtyAmount(value);
+								
+						
 						}
 
 						boardState[x][y]=state;
@@ -149,7 +158,7 @@ public class Instance {
 	@Override
 	public String toString() {
 		System.out.println("Vacuum_cleaner Instance:\n");
-		System.out.println("Size: "+size);
+		System.out.println("Size: ("+size_n+","+size_m+")");
 		System.out.println("Agent Position: ("+agentPos.getX()+","+agentPos.getY()+")");
 		System.out.println("Base Position: ("+basePos.getX()+","+basePos.getY()+")");
 		System.out.println("energy: "+energy);
@@ -161,20 +170,20 @@ public class Instance {
 		}
 		
 		System.out.println("World :");
-		for (int j = 0; j < boardState.length; j++) {
+		for (int j = 0; j < size_n; j++) {
 			System.out.print("\t");
-			for (int k = 0; k < boardState.length; k++) {
-				switch (boardState[j][k]) {
+			for (int k = 0; k < size_m; k++) {
+				switch (boardState[j][k].getLocState()) {
 				case Clean:
-					System.out.print("C ");
+					System.out.print("C  ");
 					break;
 
 				case Obstacle:
-					System.out.print("O ");
+					System.out.print("O  ");
 					break;
 
 				case Dirty:
-					System.out.print("D ");
+					System.out.print("D"+boardState[j][k].getDirtyAmount());
 					break;
 				}
 				
@@ -197,14 +206,6 @@ public class Instance {
 	}
 
 
-	public int getSize() {
-		return size;
-	}
-
-
-	public void setSize(int size) {
-		this.size = size;
-	}
 
 
 	public double getEnergy() {
@@ -237,15 +238,36 @@ public class Instance {
 	}
 
 
-	public LocationState[][] getBoardState() {
+	public int getSize_n() {
+		return size_n;
+	}
+
+
+	public void setSize_n(int size_n) {
+		this.size_n = size_n;
+	}
+
+
+	public int getSize_m() {
+		return size_m;
+	}
+
+
+	public void setSize_m(int size_m) {
+		this.size_m = size_m;
+	}
+
+
+	public CellLogicalState[][] getBoardState() {
 		return boardState;
 	}
 
 
-	public void setBoardState(LocationState[][] boardState) {
+	public void setBoardState(CellLogicalState[][] boardState) {
 		this.boardState = boardState;
 	}
-	
+
+
 
 	
 	

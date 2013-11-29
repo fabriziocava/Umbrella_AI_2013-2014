@@ -1,5 +1,8 @@
 package gui;
 
+import java.io.File;
+
+import gui.VacuumFrame;
 import instanceXMLParser.Instance;
 import agent.VacuumAgent1;
 import aima.core.agent.impl.AbstractAgent;
@@ -41,8 +44,7 @@ public class VacuumController extends AgentAppController {
 	public void prepare(final String changedSelector) {
 		final AgentAppFrame.SelectionState selState = this.frame.getSelection();
 		final Instance i = new Instance();
-		//i.buildINstanceJDom("instance_EXAMPLE.xml");
-		i.buildINstanceJDom(".//environment//PB - instance2.xml");
+//		i.buildINstanceJDom("instance_EXAMPLE.xml");
 		this.env = null;
 		this.agent = null;
 		switch (selState.getValue(VacuumFrame.AGENT_SEL)) {
@@ -52,8 +54,37 @@ public class VacuumController extends AgentAppController {
 		}
 		switch (selState.getValue(VacuumFrame.ENV_SEL)) {
 		default:
+
+			final int selectedValue = selState.getValue(VacuumFrame.ENV_SEL);
+
+			// System.out.println("selectedValue: " + selectedValue);
+
+			String fileName = "";
+			int current = 0;
+
+			final String path = "environment";
+			final File folder = new File(path);
+			final File[] listOfFiles = folder.listFiles();
+
+			for (final File listOfFile : listOfFiles) {
+				if (listOfFile.isFile()) {
+					final String file = listOfFile.getName();
+					if (file.endsWith(".xml") || file.endsWith(".XML")) {
+						current++;
+						fileName = file;
+					}
+				}
+				if (current > selectedValue)
+					break;
+			}
+
+			System.out.println("Loaded: " + "environment" + File.separator
+					+ fileName);
+
+			i.buildINstanceJDom("environment" + File.separator + fileName);
+
 			this.env = new VacuumEnvironment(i, this.agent);
-			break;
+
 		}
 		if (this.env != null && this.agent != null) {
 			this.frame.getEnvView().setEnvironment(this.env);
@@ -67,7 +98,7 @@ public class VacuumController extends AgentAppController {
 		logger.log("<simulation-log>");
 		try {
 			while (!this.env.isDone() && !this.frame.simulationPaused()) {
-				Thread.sleep(20);
+				Thread.sleep(500);
 				this.env.step();
 			}
 		} catch (final InterruptedException e) {

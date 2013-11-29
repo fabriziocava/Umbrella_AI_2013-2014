@@ -55,6 +55,11 @@ public class VacuumView extends EmptyEnvironmentView {
 				.getLocationState(new Point(i, j));
 	}
 
+	public int getM() {
+		return ((VacuumEnvironmentState) this.getVacuumEnv().getCurrentState())
+				.getM();
+	}
+
 	public int getN() {
 		return ((VacuumEnvironmentState) this.getVacuumEnv().getCurrentState())
 				.getN();
@@ -89,7 +94,7 @@ public class VacuumView extends EmptyEnvironmentView {
 	public void paintComponent(final Graphics g) {
 		super.paintComponent(g);
 		for (int i = 0; i < this.getN(); i++)
-			for (int j = 0; j < this.getN(); j++) {
+			for (int j = 0; j < this.getM(); j++) {
 				if (this.getLocationState(i, j) == LocationState.Dirty)
 					g.drawImage(this.imgDirty, j * this.optimalSizeCellSize(),
 							i * this.optimalSizeCellSize(),
