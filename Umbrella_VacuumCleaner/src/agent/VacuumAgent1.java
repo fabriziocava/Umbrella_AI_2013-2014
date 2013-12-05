@@ -49,31 +49,6 @@ public class VacuumAgent1 extends AbstractAgent {
 				return NoOpAction.NO_OP;
 			}
 		};
-	}
-	
-	
-/*
-	@Override
-	public Action execute(Percept percept) {
-		final LocalVacuumEnvironmentPercept vep = (LocalVacuumEnvironmentPercept) percept;
-		final Set<Action> actionsKeySet = vep.getActionEnergyCosts().keySet();
-		if(firstStep) {
-			intelligentMove = new IntelligentMove(vep);
-			listMovements = intelligentMove.getListMovements();
-			firstStep=false;
-		}
-		int moveInt=0;
-		while(listMovements.size()!=0) {
-			moveInt=listMovements.get(0);
-			final Iterator<Action> iterator = actionsKeySet.iterator();
-			for (int i = 0; i < moveInt; i++) {
-				iterator.next();
-			}
-			listMovements.remove(0);
-			return iterator.next();
-		}
-		return actionsKeySet.iterator().next();
-	}
-*/	
+	}	
 
 }
