@@ -2,7 +2,6 @@ package agent;
 
 import core.VacuumEnvironment.LocationState;
 
-
 public class MyCell {
 	
 	private LocationState state;
@@ -32,6 +31,16 @@ public class MyCell {
 
 	public void setVisited(boolean visited) {
 		this.visited = visited;
+	}
+	
+	@Override
+	public String toString() {
+		String s;
+		if(visited)
+			s = state + "-" + "V";
+		else
+			s = state + "-" + "N";
+		return s;
 	}
 
 }
