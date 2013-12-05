@@ -11,8 +11,6 @@ import core.LocalVacuumEnvironmentPerceptTaskEnvironmentB;
 
 public class VacuumAgent1 extends AbstractAgent {
 	
-	private LocalVacuumEnvironmentPerceptTaskEnvironmentB vep;
-	private Set<Action> actionsKeySet;
 	private IntelligentMove_TASK_2 intelligentMoveTask2;
 	private boolean firstStep;
 	
@@ -21,16 +19,20 @@ public class VacuumAgent1 extends AbstractAgent {
 		this.program = new AgentProgram() {
 			@Override
 			public Action execute(final Percept percept) {
+				final LocalVacuumEnvironmentPerceptTaskEnvironmentB vep = (LocalVacuumEnvironmentPerceptTaskEnvironmentB) percept;
+				final Set<Action> actionsKeySet = vep.getActionEnergyCosts().keySet();
 				if(firstStep) {
-					vep = (LocalVacuumEnvironmentPerceptTaskEnvironmentB) percept;
-					actionsKeySet = vep.getActionEnergyCosts().keySet();
 					intelligentMoveTask2 = new IntelligentMove_TASK_2(vep);
 					firstStep = false;
 				}
+				intelligentMoveTask2.setVep(vep);
 				int move = intelligentMoveTask2.getMovement();
 				final Iterator<Action> iterator = actionsKeySet.iterator();
 				for (int i = 0; i < move; i++)
 					iterator.next();
+				if(vep.isMovedLastTime()) {
+					intelligentMoveTask2.insertToMyCell(move);
+				}
 				return iterator.next();
 			}
 		};
