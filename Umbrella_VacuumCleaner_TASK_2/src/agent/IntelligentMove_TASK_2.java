@@ -103,9 +103,11 @@ public class IntelligentMove_TASK_2 {
 		return movement;
 	}
 	
-	private boolean cellVisited(int move) {
-		int x = (int)agent.getX();
-		int y = (int)agent.getY();
+	private Point getNextAgentCoord(int move){
+				
+		int x = (int)agent.getLocation().getX();
+		int y = (int)agent.getLocation().getY();
+		
 		if(move==UP)
 			x-=1;
 		else if(move==DOWN)
@@ -114,6 +116,16 @@ public class IntelligentMove_TASK_2 {
 			y-=1;
 		else if(move==RIGHT)
 			y+=1;
+		
+		Point a = new Point(x,y);
+		return a;
+	}
+				
+	private boolean cellVisited(int move) {
+		Point p = getNextAgentCoord(move);
+		int x = (int)p.getX();
+		int y = (int)p.getY();
+		
 		try {
 			if(world[x][y].isVisited())
 				return true;
@@ -124,17 +136,13 @@ public class IntelligentMove_TASK_2 {
 		}
 	}
 	
+
 	private boolean isObstacleCell(int move) {
-		int x = (int)agent.getX();
-		int y = (int)agent.getY();
-		if(move==UP)
-			x-=1;
-		else if(move==DOWN)
-			x+=1;
-		else if(move==LEFT)
-			y-=1;
-		else if(move==RIGHT)
-			y+=1;
+		
+		Point p = getNextAgentCoord(move);
+		int x = (int)p.getX();
+		int y = (int)p.getY();
+		
 		try {
 			if(world[x][y].getState()==LocationState.Obstacle)
 				return true;
