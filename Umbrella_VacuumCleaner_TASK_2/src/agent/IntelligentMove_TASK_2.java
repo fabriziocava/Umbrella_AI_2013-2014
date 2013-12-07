@@ -45,7 +45,7 @@ public class IntelligentMove_TASK_2 {
 		N = vep.getN();
 		if(N%2!=0) N++;
 		M = vep.getM();
-		if(M%2!=0) N++;
+		if(M%2!=0) M++;
 		world = new MyCell [N*2][M*2];
 		//initWorld();
 		
