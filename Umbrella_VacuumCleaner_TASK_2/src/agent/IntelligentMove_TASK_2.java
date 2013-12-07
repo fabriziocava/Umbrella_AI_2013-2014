@@ -102,7 +102,12 @@ public class IntelligentMove_TASK_2 {
 		listMovements.add(movement);
 		return movement;
 	}
-	
+	/**
+	 * return a point for the next coord given by move made
+	 * 
+	 * @param move the move made 
+	 * @return a point for the next coord
+	 */
 	private Point getNextAgentCoord(int move){
 				
 		int x = (int)agent.getLocation().getX();
