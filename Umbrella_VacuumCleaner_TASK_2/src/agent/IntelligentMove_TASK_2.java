@@ -20,7 +20,7 @@ public class IntelligentMove_TASK_2 {
 	//private int lastMovement=SUCK; /*variabile inizializzata ad un movimento onde evitare eccezioni se nella cella iniziare è presente una cella dirty*/
 	
 	private double THRESHOLD;
-	private boolean isOverThreshold;
+	private boolean isUnderThreshold;
 	
 	private int N;
 	private int M;
@@ -40,7 +40,7 @@ public class IntelligentMove_TASK_2 {
 		foundBase = false;
 		
 		THRESHOLD = vep.getInitialEnergy()/2; /*DA CAMBIARE IN BASE ALLA SIZE DELLA MAPPA*/
-		isOverThreshold = false;
+		isUnderThreshold = false;
 		
 		N = vep.getN();
 		if(N%2!=0) N++;
@@ -88,8 +88,8 @@ public class IntelligentMove_TASK_2 {
 			*/
 			movement = nextMoveToCellNotVisited();
 			if(vep.getCurrentEnergy()<THRESHOLD)
-				isOverThreshold = true;
-			if(!isOverThreshold) {
+				isUnderThreshold = true;
+			if(!isUnderThreshold) {
 				if(vep.getState().getLocState()==LocationState.Dirty) {
 					movement=SUCK;
 				}
