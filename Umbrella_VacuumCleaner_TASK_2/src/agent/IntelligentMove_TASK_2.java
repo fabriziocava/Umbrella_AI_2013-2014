@@ -292,17 +292,19 @@ public class IntelligentMove_TASK_2 {
 	}
 	
 	private void setAgent(int move) {
-		int x = (int)agent.getX();
-		int y = (int)agent.getY();
-		if(move==UP)
-			x-=1;
-		else if(move==DOWN)
-			x+=1;
-		else if(move==LEFT)
-			y-=1;
-		else if(move==RIGHT)
-			y+=1;
-		agent.setLocation(x, y);
+//		int x = (int)agent.getX();
+//		int y = (int)agent.getY();
+//		if(move==UP)
+//			x-=1;
+//		else if(move==DOWN)
+//			x+=1;
+//		else if(move==LEFT)
+//			y-=1;
+//		else if(move==RIGHT)
+//			y+=1;
+		Point np = getNextAgentCoord(move);
+		
+		agent.setLocation(np.x, np.y);
 	}
 	
 	public void print() {
