@@ -17,7 +17,7 @@ public class IntelligentMove_TASK_2 {
 	final static int NoOP = 5;
 	
 	private boolean firstMove;
-	//private int lastMovement=SUCK; /*variabile inizializzata ad un movimento onde evitare eccezioni se nella cella iniziare è presente una cella dirty*/
+	private int lastMovement=SUCK; /*variabile inizializzata ad un movimento onde evitare eccezioni se nella cella iniziare è presente una cella dirty*/
 	
 	private double THRESHOLD;
 	private boolean isUnderThreshold;
@@ -30,6 +30,7 @@ public class IntelligentMove_TASK_2 {
 	private Point base;
 	
 	private ArrayList<Integer> listMovements;
+	private boolean canAddMovements;
 	
 	private LocalVacuumEnvironmentPerceptTaskEnvironmentB vep;
 	
@@ -52,6 +53,7 @@ public class IntelligentMove_TASK_2 {
 		agent = new Point(N,M);
 		
 		listMovements = new ArrayList<Integer>();
+		canAddMovements = true;
 	}
 	
 	private void initWorld() {
@@ -99,9 +101,11 @@ public class IntelligentMove_TASK_2 {
 			movement = NoOP;
 		//if(movement!=SUCK)
 			//lastMovement = movement;
-		listMovements.add(movement);
+		if(canAddMovements)
+			listMovements.add(movement);
 		return movement;
 	}
+	
 	/**
 	 * return a point for the next coord given by move made
 	 * 
@@ -172,7 +176,7 @@ public class IntelligentMove_TASK_2 {
 		int eastX = x;
 		int eastY = y+1;
 		ArrayList<Integer> nextMove = new ArrayList<Integer>();
-		if(movement!=SUCK && !isObstacleCell(movement) && !cellVisited(movement))
+		if(!isObstacleCell(movement) && !cellVisited(movement))
 			nextMove.add(movement);
 		try {
 			if(!world[northX][northY].isVisited()) {
@@ -204,16 +208,7 @@ public class IntelligentMove_TASK_2 {
 		}
 		new Random();
 		if(nextMove.size()==0) {
-			/*
-			movement = lastMovement;
-			while(movement==SUCK || isObstacleCell(movement))
-				movement = new Random().nextInt(5);
-			System.out.println(movement + " <--- MOVE");
-			*/
-			if(listMovements.get(index)==SUCK) { /* controllo superfluo */
-				listMovements.remove(index);
-				index=listMovements.size()-1;
-			}
+			canAddMovements = false;
 			if(listMovements.get(index)==UP)
 				movement=DOWN;
 			else if(listMovements.get(index)==DOWN)
@@ -223,8 +218,10 @@ public class IntelligentMove_TASK_2 {
 			else if(listMovements.get(index)==RIGHT)
 				movement=LEFT;
 			listMovements.remove(index);
+			lastMovement = movement;
 		}
 		else {
+			canAddMovements = true;
 			movement = nextMove.get(0);
 		}
 		//System.out.println(nextMove);
@@ -234,13 +231,16 @@ public class IntelligentMove_TASK_2 {
 	public void setVep(LocalVacuumEnvironmentPerceptTaskEnvironmentB newVep) {
 		if(vep.isOnBase()) {
 			base = new Point(agent);
-			System.out.println(base);
+			//System.out.println(base);
 		}
 		int index = listMovements.size()-1;
 		if(newVep.isMovedLastTime()) {
 			setCell(vep.getState().getLocState());
 			try {
-				setAgent(listMovements.get(index));
+				if(canAddMovements)
+					setAgent(listMovements.get(index));
+				else
+					setAgent(lastMovement);
 			} catch (Exception e) {
 				//e.printStackTrace();
 			}
@@ -261,8 +261,8 @@ public class IntelligentMove_TASK_2 {
 						p = new Point((int)agent.getX(), (int)agent.getY()-1);
 					else if(listMovements.get(index)==RIGHT)
 						p = new Point((int)agent.getX(), (int)agent.getY()+1);
-					if(listMovements.get(index)!=SUCK)
-						setCell(p,LocationState.Obstacle);
+					//if(listMovements.get(index)!=SUCK)
+					setCell(p,LocationState.Obstacle);
 					listMovements.remove(index);
 				}
 			} catch (Exception e) {
@@ -318,6 +318,7 @@ public class IntelligentMove_TASK_2 {
 			}
 			System.err.println();
 		}
+		//System.out.println(listMovements);
 	}
 	
 }
