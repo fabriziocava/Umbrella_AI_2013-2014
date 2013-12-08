@@ -35,7 +35,7 @@ public class VacuumAgent1 extends AbstractAgent {
 					return iterator.next();
 				}
 				else {
-					//intelligentMoveTask2.print();
+					intelligentMoveTask2.print();
 				}
 				return NoOpAction.NO_OP;
 			}

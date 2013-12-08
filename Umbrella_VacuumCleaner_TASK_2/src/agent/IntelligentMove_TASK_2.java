@@ -16,6 +16,8 @@ public class IntelligentMove_TASK_2 {
 	final static int UP = 4;
 	final static int NoOP = 5;
 	
+	private LocalVacuumEnvironmentPerceptTaskEnvironmentB vep;
+	
 	private boolean firstMove;
 	private int lastMovement=SUCK; /*variabile inizializzata ad un movimento onde evitare eccezioni se nella cella iniziare è presente una cella dirty*/
 	
@@ -32,7 +34,7 @@ public class IntelligentMove_TASK_2 {
 	private ArrayList<Integer> listMovements;
 	private boolean canAddMovements;
 	
-	private LocalVacuumEnvironmentPerceptTaskEnvironmentB vep;
+	private ArrayList<Point> listDirtyCells;
 	
 	public IntelligentMove_TASK_2(LocalVacuumEnvironmentPerceptTaskEnvironmentB vep) {
 		this.vep=vep;
@@ -40,7 +42,7 @@ public class IntelligentMove_TASK_2 {
 		firstMove = true;
 		foundBase = false;
 		
-		THRESHOLD = vep.getInitialEnergy()/2; /*DA CAMBIARE IN BASE ALLA SIZE DELLA MAPPA*/
+		THRESHOLD = vep.getInitialEnergy()*75/100; /*DA CAMBIARE IN BASE ALLA SIZE DELLA MAPPA*/
 		isUnderThreshold = false;
 		
 		N = vep.getN();
@@ -54,6 +56,8 @@ public class IntelligentMove_TASK_2 {
 		
 		listMovements = new ArrayList<Integer>();
 		canAddMovements = true;
+		
+		listDirtyCells = new ArrayList<Point>();
 	}
 	
 	private void initWorld() {
@@ -66,41 +70,33 @@ public class IntelligentMove_TASK_2 {
 		new Random();
 		int movement=0;
 		if(firstMove) {
-			firstMove = false;
-			movement = new Random().nextInt(5);
-			while(movement==SUCK)
+			/**
+			 * CASO IN CUI L'AGENTE PARTE DA UNA CELLA dirty
+			 */
+			if(vep.getState().getLocState()!=LocationState.Dirty) {
+				firstMove = false;
 				movement = new Random().nextInt(5);
+				while(movement==SUCK)
+					movement = new Random().nextInt(5);
+			}
 		}
 		else {
-			/*
-			if(vep.isMovedLastTime())
-				movement = nextMoveToCellNotVisited();
-			else {
-				if(listMovements.get(listMovements.size()-1)!=SUCK) {
-					//movement = new Random().nextInt(5);
-					//while(movement==SUCK || movement==lastMovement || isObstacleCell(movement) || movement!=nextMoveToCellNotVisited())
-					//	movement = new Random().nextInt(5);
-					
-					movement = nextMoveToCellNotVisited();
-				}
-				else {
-					movement = lastMovement;
-				}
+			if(foundBase) {
+				movement = NoOP; /*cambiare strategia quando è conoscenza della base*/
 			}
-			*/
-			movement = nextMoveToCellNotVisited();
-			if(vep.getCurrentEnergy()<THRESHOLD)
-				isUnderThreshold = true;
-			if(!isUnderThreshold) {
-				if(vep.getState().getLocState()==LocationState.Dirty) {
-					movement=SUCK;
-				}
+			else {
+				movement = nextMoveToExploration();
+			}
+		}
+		if(vep.getCurrentEnergy()<THRESHOLD)
+			isUnderThreshold = true;
+		if(!isUnderThreshold) {
+			if(vep.getState().getLocState()==LocationState.Dirty) {
+				movement=SUCK;
 			}
 		}
 		if(vep.getCurrentEnergy()==0)
 			movement = NoOP;
-		//if(movement!=SUCK)
-			//lastMovement = movement;
 		if(canAddMovements)
 			listMovements.add(movement);
 		return movement;
@@ -162,7 +158,7 @@ public class IntelligentMove_TASK_2 {
 		}
 	}
 	
-	private int nextMoveToCellNotVisited() {
+	private int nextMoveToExploration() {
 		int index = listMovements.size()-1;
 		int movement=listMovements.get(index);
 		int x = (int)agent.getX();
@@ -229,9 +225,11 @@ public class IntelligentMove_TASK_2 {
 	}
 
 	public void setVep(LocalVacuumEnvironmentPerceptTaskEnvironmentB newVep) {
-		if(vep.isOnBase()) {
-			base = new Point(agent);
-			//System.out.println(base);
+		if(!foundBase) {
+			if(newVep.isOnBase()) {
+				base = new Point(agent);
+				foundBase = true;
+			}
 		}
 		int index = listMovements.size()-1;
 		if(newVep.isMovedLastTime()) {
@@ -261,7 +259,6 @@ public class IntelligentMove_TASK_2 {
 						p = new Point((int)agent.getX(), (int)agent.getY()-1);
 					else if(listMovements.get(index)==RIGHT)
 						p = new Point((int)agent.getX(), (int)agent.getY()+1);
-					//if(listMovements.get(index)!=SUCK)
 					setCell(p,LocationState.Obstacle);
 					listMovements.remove(index);
 				}
@@ -277,12 +274,20 @@ public class IntelligentMove_TASK_2 {
 		int x = (int)agent.getX();
 		int y = (int)agent.getY();
 		world[x][y]=new MyCell(state, true);
+		if(state == LocationState.Dirty) {
+			if(!containsPoint(agent))
+				listDirtyCells.add(new Point(agent));
+		}
 	}
 	
 	public void setCell(Point p, LocationState state) {
 		int x = (int)p.getX();
 		int y = (int)p.getY();
 		world[x][y]=new MyCell(state, true);
+		if(state == LocationState.Dirty) {
+			if(!containsPoint(p))
+				listDirtyCells.add(new Point(p));
+		}
 	}
 	
 	public void setBase() {
@@ -292,22 +297,19 @@ public class IntelligentMove_TASK_2 {
 	}
 	
 	private void setAgent(int move) {
-//		int x = (int)agent.getX();
-//		int y = (int)agent.getY();
-//		if(move==UP)
-//			x-=1;
-//		else if(move==DOWN)
-//			x+=1;
-//		else if(move==LEFT)
-//			y-=1;
-//		else if(move==RIGHT)
-//			y+=1;
 		Point np = getNextAgentCoord(move);
-		
 		agent.setLocation(np.x, np.y);
 	}
 	
-	public void print() {
+	private boolean containsPoint(Point p) {
+		for(Point point : listDirtyCells) {
+			if(point.getX()==p.getX() && point.getY()==p.getY())
+				return true;
+		}
+		return false;
+	}
+	
+	public void print() {		
 		for(int i=0; i<N*2; i++) {
 			for(int j=0; j<M*2; j++) {
 				try {
@@ -319,6 +321,8 @@ public class IntelligentMove_TASK_2 {
 			System.err.println();
 		}
 		//System.out.println(listMovements);
+		//System.out.println(base);
+		System.out.println(listDirtyCells);
 	}
 	
 }
