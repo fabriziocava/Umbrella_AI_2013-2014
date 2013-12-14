@@ -83,7 +83,7 @@ public class LocalVacuumEnvironmentPerceptTaskEnvironmentB extends
 
 	public Integer getM() {
 		return (Integer) this
-				.getAttribute(LocalVacuumEnvironmentPerceptTaskEnvironmentB.ATTRIBUTE_N);
+				.getAttribute(LocalVacuumEnvironmentPerceptTaskEnvironmentB.ATTRIBUTE_M);
 	}
 
 	public Integer getN() {
