@@ -83,13 +83,18 @@ public class IntelligentMove_TASK_2 {
 			/**
 			 * CASO IN CUI L'AGENTE PARTE DA UNA CELLA dirty
 			 */
+			/*
 			if(vep.getState().getLocState()!=LocationState.Dirty) {
-				if(vep.isMovedLastTime())
+				//if(vep.isMovedLastTime())
 					firstMove = false;
 				movement = new Random().nextInt(5);
 				while(movement==SUCK)
 					movement = new Random().nextInt(5);
 			}
+			*/
+			movement = new Random().nextInt(5);
+			while(movement==SUCK)
+				movement = new Random().nextInt(5);
 		}
 		else {
 			if(foundBase) {
@@ -107,7 +112,7 @@ public class IntelligentMove_TASK_2 {
 						}
 					}
 				}
-				System.out.println(dsp.getPath());
+				//System.out.println(dsp.getPath());
 				
 				//movement = NoOP; /*cambiare strategia quando è conoscenza della base*/
 			}
@@ -251,6 +256,8 @@ public class IntelligentMove_TASK_2 {
 	}
 
 	public void setVep(LocalVacuumEnvironmentPerceptTaskEnvironmentB newVep) {
+		if(newVep.isMovedLastTime())
+			firstMove=false;
 		if(!foundBase) {
 			if(newVep.isOnBase()) {
 				base = new Point(agent);

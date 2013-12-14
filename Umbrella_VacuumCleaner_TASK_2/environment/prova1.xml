@@ -26,6 +26,7 @@
     <tile_state x="5" y="9">obstacle</tile_state>
     <tile_state x="6" y="1">obstacle</tile_state>
     <tile_state x="6" y="4" value="1">dirty</tile_state>
+    <tile_state x="6" y="5" value="1">dirty</tile_state>
     <tile_state x="6" y="6" value="1">dirty</tile_state>
     <tile_state x="7" y="1">obstacle</tile_state>
     <tile_state x="7" y="4" value="1">dirty</tile_state>
