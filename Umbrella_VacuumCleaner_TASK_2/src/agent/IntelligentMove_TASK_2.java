@@ -4,6 +4,11 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.jgrapht.UndirectedGraph;
+import org.jgrapht.alg.DijkstraShortestPath;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleGraph;
+
 import core.LocalVacuumEnvironmentPerceptTaskEnvironmentB;
 import core.VacuumEnvironment.LocationState;
 
@@ -36,6 +41,9 @@ public class IntelligentMove_TASK_2 {
 	
 	private ArrayList<Point> listDirtyCells;
 	
+	private UndirectedGraph<Point, DefaultEdge> graph;
+	DijkstraShortestPath<Point, DefaultEdge> dsp;
+	
 	public IntelligentMove_TASK_2(LocalVacuumEnvironmentPerceptTaskEnvironmentB vep) {
 		this.vep=vep;
 		
@@ -58,6 +66,8 @@ public class IntelligentMove_TASK_2 {
 		canAddMovements = true;
 		
 		listDirtyCells = new ArrayList<Point>();
+		
+		graph = new SimpleGraph<Point, DefaultEdge>(DefaultEdge.class);
 	}
 	
 	private void initWorld() {
@@ -74,7 +84,8 @@ public class IntelligentMove_TASK_2 {
 			 * CASO IN CUI L'AGENTE PARTE DA UNA CELLA dirty
 			 */
 			if(vep.getState().getLocState()!=LocationState.Dirty) {
-				firstMove = false;
+				if(vep.isMovedLastTime())
+					firstMove = false;
 				movement = new Random().nextInt(5);
 				while(movement==SUCK)
 					movement = new Random().nextInt(5);
@@ -82,7 +93,23 @@ public class IntelligentMove_TASK_2 {
 		}
 		else {
 			if(foundBase) {
-				movement = NoOP; /*cambiare strategia quando è conoscenza della base*/
+				generateGraph();
+				int index;
+				DijkstraShortestPath<Point, DefaultEdge> newDsp;
+				while(listDirtyCells.size()!=0) {
+					index=0;
+					dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(index));
+					for(int i=0; i<listDirtyCells.size(); i++) {
+						newDsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(i));
+						if(newDsp.getPathLength()<dsp.getPathLength()) {
+							dsp=newDsp;
+							index=i;
+						}
+					}
+				}
+				System.out.println(dsp.getPath());
+				
+				//movement = NoOP; /*cambiare strategia quando è conoscenza della base*/
 			}
 			else {
 				movement = nextMoveToExploration();
@@ -220,7 +247,6 @@ public class IntelligentMove_TASK_2 {
 			canAddMovements = true;
 			movement = nextMove.get(0);
 		}
-		//System.out.println(nextMove);
 		return movement;
 	}
 
@@ -309,7 +335,30 @@ public class IntelligentMove_TASK_2 {
 		return false;
 	}
 	
-	public void print() {		
+	private void generateGraph() {
+		for(int i=0; i<N*2; i++)
+			for(int j=0; j<M*2; j++)
+				graph.addVertex(new Point(i,j));
+		Point p1, p2;
+		for(int i=0; i<N*2; i++)
+			for(int j=0; j<M*2-1; j++) {
+				try {
+					p1 = new Point(i,j);
+					p2 = new Point(i,j+1);
+					if(!(world[p1.x][p1.y].getState()==LocationState.Obstacle || world[p2.x][p2.y].getState()==LocationState.Obstacle))
+						graph.addEdge(p1, p2);
+					p1 = new Point(j,i);
+					p2 = new Point(j+1,i);
+					if(!(world[p1.x][p1.y].getState()==LocationState.Obstacle || world[p2.x][p2.y].getState()==LocationState.Obstacle))
+						graph.addEdge(p1, p2);
+				} catch (Exception e) {
+					
+				}
+			}
+	}
+	
+	public void print() {
+		/*
 		for(int i=0; i<N*2; i++) {
 			for(int j=0; j<M*2; j++) {
 				try {
@@ -320,9 +369,11 @@ public class IntelligentMove_TASK_2 {
 			}
 			System.err.println();
 		}
+		*/
 		//System.out.println(listMovements);
 		//System.out.println(base);
 		System.out.println(listDirtyCells);
+		//System.out.println(graph.edgeSet());
 	}
 	
 }
