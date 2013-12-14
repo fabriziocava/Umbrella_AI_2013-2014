@@ -54,8 +54,10 @@ public class IntelligentMove_TASK_2 {
 		isUnderThreshold = false;
 		
 		N = vep.getN();
+		N++;
 		if(N%2!=0) N++;
 		M = vep.getM();
+		M++;
 		if(M%2!=0) M++;
 		world = new MyCell [N*2][M*2];
 		//initWorld();
@@ -80,24 +82,13 @@ public class IntelligentMove_TASK_2 {
 		new Random();
 		int movement=0;
 		if(firstMove) {
-			/**
-			 * CASO IN CUI L'AGENTE PARTE DA UNA CELLA dirty
-			 */
-			/*
-			if(vep.getState().getLocState()!=LocationState.Dirty) {
-				//if(vep.isMovedLastTime())
-					firstMove = false;
-				movement = new Random().nextInt(5);
-				while(movement==SUCK)
-					movement = new Random().nextInt(5);
-			}
-			*/
 			movement = new Random().nextInt(5);
 			while(movement==SUCK)
 				movement = new Random().nextInt(5);
 		}
 		else {
 			if(foundBase) {
+				/*
 				generateGraph();
 				int index;
 				DijkstraShortestPath<Point, DefaultEdge> newDsp;
@@ -113,8 +104,8 @@ public class IntelligentMove_TASK_2 {
 					}
 				}
 				//System.out.println(dsp.getPath());
-				
-				//movement = NoOP; /*cambiare strategia quando è conoscenza della base*/
+				*/
+				movement = NoOP; /*cambiare strategia quando è conoscenza della base*/
 			}
 			else {
 				movement = nextMoveToExploration();
@@ -365,7 +356,7 @@ public class IntelligentMove_TASK_2 {
 	}
 	
 	public void print() {
-		/*
+		
 		for(int i=0; i<N*2; i++) {
 			for(int j=0; j<M*2; j++) {
 				try {
@@ -376,7 +367,7 @@ public class IntelligentMove_TASK_2 {
 			}
 			System.err.println();
 		}
-		*/
+		
 		//System.out.println(listMovements);
 		//System.out.println(base);
 		System.out.println(listDirtyCells);
