@@ -3,12 +3,14 @@ package agent;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Set;
 
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.DijkstraShortestPath;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 
+import aima.core.agent.Action;
 import core.LocalVacuumEnvironmentPerceptTaskEnvironmentB;
 import core.VacuumEnvironment.LocationState;
 
@@ -36,13 +38,18 @@ public class IntelligentMove_TASK_2 {
 	private boolean foundBase; /*true: se la base è stata trovata, false: altrimenti*/
 	private Point base;
 	
-	private ArrayList<Integer> listMovements;
+	private ArrayList<Integer> stackOfMovements;
 	private boolean canAddMovements;
 	
 	private ArrayList<Point> listDirtyCells;
 	
 	private UndirectedGraph<Point, DefaultEdge> graph;
-	DijkstraShortestPath<Point, DefaultEdge> dsp;
+	/** Lista movimenti per pulire le celle dirty una volta trovata la base.*/
+	private ArrayList<Integer> listMovementsToCleanOrReturnToBase;
+	
+	private double costSuck;
+	/**TRUE se sto tornando alla base, FALSE altrimenti.*/
+	private boolean returnToBase; 
 	
 	public IntelligentMove_TASK_2(LocalVacuumEnvironmentPerceptTaskEnvironmentB vep) {
 		this.vep=vep;
@@ -51,8 +58,11 @@ public class IntelligentMove_TASK_2 {
 		foundBase = false;
 		
 		THRESHOLD = vep.getInitialEnergy()*75/100; /*DA CAMBIARE IN BASE ALLA SIZE DELLA MAPPA*/
-		isUnderThreshold = false;
-		
+		if(vep.getCurrentEnergy()<THRESHOLD)
+			isUnderThreshold = true;
+		else
+			isUnderThreshold = false;
+	
 		N = vep.getN();
 		N++;
 		if(N%2!=0) N++;
@@ -64,12 +74,21 @@ public class IntelligentMove_TASK_2 {
 		
 		agent = new Point(N,M);
 		
-		listMovements = new ArrayList<Integer>();
+		stackOfMovements = new ArrayList<Integer>();
 		canAddMovements = true;
 		
 		listDirtyCells = new ArrayList<Point>();
 		
 		graph = new SimpleGraph<Point, DefaultEdge>(DefaultEdge.class);
+		listMovementsToCleanOrReturnToBase = new ArrayList<Integer>();
+		
+		try {
+			Set<Action> actionsKeySet = vep.getActionEnergyCosts().keySet();
+			costSuck=vep.getActionEnergyCosts().get(actionsKeySet.iterator().next());
+		} catch (Exception e) {
+			costSuck = 1;
+		}
+		returnToBase = false;
 	}
 	
 	private void initWorld() {
@@ -80,50 +99,129 @@ public class IntelligentMove_TASK_2 {
 	
 	public int getMovement() {
 		new Random();
-		int movement=0;
+		int move=0;
+
 		if(firstMove) {
-			movement = new Random().nextInt(5);
-			while(movement==SUCK || isObstacleCell(movement))
-				movement = new Random().nextInt(5);
+			move = new Random().nextInt(5);
+			while(move==SUCK || isObstacleCell(move))
+				move = new Random().nextInt(5);
+            if(!isUnderThreshold) {
+                if(vep.getState().getLocState()==LocationState.Dirty) {
+                        move=SUCK;
+                }
+            }
 		}
 		else {
 			if(foundBase) {
-				generateGraph();
-				int index;
-				DijkstraShortestPath<Point, DefaultEdge> newDsp;
-//				while(listDirtyCells.size()!=0) {
-//					index=0;
-//					dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(index));
-//					for(int i=0; i<listDirtyCells.size(); i++) {
-//						newDsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(i));
-//						if(newDsp.getPathLength()<dsp.getPathLength()) {
-//							dsp=newDsp;
-//							index=i;
-//						}
-//					}
-//					listDirtyCells.remove(index);
-//					System.out.println(dsp.getPath());
-//				}
-				dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(0));
-				System.out.println("MIN_PATH: " + dsp.getPath());
-				movement = NoOP; /*cambiare strategia quando è conoscenza della base*/
+				if(!listMovementsToCleanOrReturnToBase.isEmpty()) {
+					move = listMovementsToCleanOrReturnToBase.get(0);
+					listMovementsToCleanOrReturnToBase.remove(0);
+				}
+				else {
+					if(!listDirtyCells.isEmpty()) {
+						generateGraph();
+						DijkstraShortestPath<Point, DefaultEdge> dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(0));
+						DijkstraShortestPath<Point, DefaultEdge> newDsp;
+						int index=0;
+						for(int i=1; i<listDirtyCells.size(); i++) {
+							newDsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(i));
+							if(newDsp.getPathLength()<dsp.getPathLength()) {
+								dsp=newDsp;
+								index=i;
+							}
+						}
+						ArrayList<DefaultEdge> de_list;
+						Point currentPoint = new Point(agent);
+						ArrayList<Point> listPoints = new ArrayList<Point>();
+						listPoints.add(currentPoint);
+						de_list = (ArrayList<DefaultEdge>) dsp.getPath().getEdgeList();
+						for(DefaultEdge de : de_list) {
+							Point pTarget = graph.getEdgeTarget(de);
+							if(pTarget.equals(currentPoint))
+								pTarget = graph.getEdgeSource(de);
+							listPoints.add(pTarget);
+							currentPoint = pTarget;
+						}
+						DijkstraShortestPath<Point, DefaultEdge> dspToBase = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, base);
+						double energyRequired = dsp.getPathLength()+dspToBase.getPathLength()+costSuck;
+						if(energyRequired<=vep.getCurrentEnergy()) {
+							addListMovementsToCleanOrReturnToBase(listPoints);
+							/**
+							 * Elimina la cella dirty dalla lista
+							 */
+							listDirtyCells.remove(index);
+						}
+						else {
+							listDirtyCells = new ArrayList<Point>();
+							if(agent.getX()==base.getX() && agent.getY()==base.getY())
+								move = NoOP;
+							else {
+								returnToBase = true;
+								listPoints.add(currentPoint);
+								de_list = (ArrayList<DefaultEdge>) dspToBase.getPath().getEdgeList();
+								for(DefaultEdge de : de_list) {
+									Point pTarget = graph.getEdgeTarget(de);
+									if(pTarget.equals(currentPoint))
+										pTarget = graph.getEdgeSource(de);
+									listPoints.add(pTarget);
+									currentPoint = pTarget;
+								}
+								addListMovementsToCleanOrReturnToBase(listPoints);
+							}
+						}
+						/*
+						 * Prima mossa
+						 */
+						if(!listMovementsToCleanOrReturnToBase.isEmpty()) {
+							move = listMovementsToCleanOrReturnToBase.get(0);
+							listMovementsToCleanOrReturnToBase.remove(0);
+						}
+					}
+					else { /* esplorazione nei pressi della base se ho ancora energia */
+						move = NoOP;
+					}
+				}
 			}
 			else {
-				movement = nextMoveToExploration();
-			}
-		}
-		if(vep.getCurrentEnergy()<THRESHOLD)
-			isUnderThreshold = true;
-		if(!isUnderThreshold) {
-			if(vep.getState().getLocState()==LocationState.Dirty) {
-				movement=SUCK;
+				move = nextMoveToExploration();
+                if(!isUnderThreshold) {
+                    if(vep.getState().getLocState()==LocationState.Dirty) {
+                            move=SUCK;
+                    }
+                }
 			}
 		}
 		if(vep.getCurrentEnergy()==0)
-			movement = NoOP;
+			move = NoOP;
 		if(canAddMovements)
-			listMovements.add(movement);
-		return movement;
+			stackOfMovements.add(move);
+		return move;
+	}
+	
+	private void addListMovementsToCleanOrReturnToBase(ArrayList<Point> listPoints) {
+		for(int i=0; i<listPoints.size()-1; i++) {
+			listMovementsToCleanOrReturnToBase.add(neighborhood(listPoints.get(i), listPoints.get(i+1)));
+		}
+		if(!returnToBase)
+			listMovementsToCleanOrReturnToBase.add(SUCK);
+	}
+	
+	private int neighborhood(Point p1, Point p2) {
+		// p1 to p2
+		int move=0;
+		double p1_x = p1.getX();
+		double p1_y = p1.getY();
+		double p2_x = p2.getX();
+		double p2_y = p2.getY();
+		if(p1_x<p2_x)
+			move=DOWN;
+		else if(p1_x>p2_x)
+			move=UP;
+		else if(p1_y<p2_y)
+			move=RIGHT;
+		else if(p1_y>p2_y)
+			move=LEFT;
+		return move;
 	}
 	
 	/**
@@ -183,8 +281,8 @@ public class IntelligentMove_TASK_2 {
 	}
 	
 	private int nextMoveToExploration() {
-		int index = listMovements.size()-1;
-		int movement=listMovements.get(index);
+		int index = stackOfMovements.size()-1;
+		int movement=stackOfMovements.get(index);
 		int x = (int)agent.getX();
 		int y = (int)agent.getY();
 		int northX = x-1;
@@ -229,15 +327,15 @@ public class IntelligentMove_TASK_2 {
 		new Random();
 		if(nextMove.size()==0) {
 			canAddMovements = false;
-			if(listMovements.get(index)==UP)
+			if(stackOfMovements.get(index)==UP)
 				movement=DOWN;
-			else if(listMovements.get(index)==DOWN)
+			else if(stackOfMovements.get(index)==DOWN)
 				movement=UP;
-			else if(listMovements.get(index)==LEFT)
+			else if(stackOfMovements.get(index)==LEFT)
 				movement=RIGHT;
-			else if(listMovements.get(index)==RIGHT)
+			else if(stackOfMovements.get(index)==RIGHT)
 				movement=LEFT;
-			listMovements.remove(index);
+			stackOfMovements.remove(index);
 			lastMovement = movement;
 		}
 		else {
@@ -250,12 +348,14 @@ public class IntelligentMove_TASK_2 {
 	public void setVep(LocalVacuumEnvironmentPerceptTaskEnvironmentB newVep) {
 		if(newVep.isMovedLastTime())
 			firstMove=false;
-		int index = listMovements.size()-1;
+		if(newVep.getCurrentEnergy()<THRESHOLD)
+			isUnderThreshold = true;
+		int index = stackOfMovements.size()-1;
 		if(newVep.isMovedLastTime()) {
 			setCell(vep.getState().getLocState());
 			try {
 				if(canAddMovements)
-					setAgent(listMovements.get(index));
+					setAgent(stackOfMovements.get(index));
 				else
 					setAgent(lastMovement);
 			} catch (Exception e) {
@@ -264,22 +364,22 @@ public class IntelligentMove_TASK_2 {
 		}
 		else {
 			try {
-				if(listMovements.get(index)==SUCK) {
+				if(stackOfMovements.get(index)==SUCK) {
 					setCell(LocationState.Clean);
-					listMovements.remove(index);
+					stackOfMovements.remove(index);
 				}
 				else {
 					Point p = null;
-					if(listMovements.get(index)==UP)
+					if(stackOfMovements.get(index)==UP)
 						p = new Point((int)agent.getX()-1, (int)agent.getY());
-					else if(listMovements.get(index)==DOWN)
+					else if(stackOfMovements.get(index)==DOWN)
 						p = new Point((int)agent.getX()+1, (int)agent.getY());
-					else if(listMovements.get(index)==LEFT)
+					else if(stackOfMovements.get(index)==LEFT)
 						p = new Point((int)agent.getX(), (int)agent.getY()-1);
-					else if(listMovements.get(index)==RIGHT)
+					else if(stackOfMovements.get(index)==RIGHT)
 						p = new Point((int)agent.getX(), (int)agent.getY()+1);
 					setCell(p,LocationState.Obstacle);
-					listMovements.remove(index);
+					stackOfMovements.remove(index);
 				}
 			} catch (Exception e) {
 				//e.printStackTrace();
@@ -352,7 +452,7 @@ public class IntelligentMove_TASK_2 {
 	}
 	
 	public void print() {
-		
+		/*
 		for(int i=0; i<N*2; i++) {
 			for(int j=0; j<M*2; j++) {
 				try {
@@ -363,10 +463,10 @@ public class IntelligentMove_TASK_2 {
 			}
 			System.err.println();
 		}
-		
+		*/
 		//System.out.println("BASE: " + agent);
 		//System.out.println(listMovements);
-		//System.out.println(listDirtyCells);
+		//System.out.println("DIRTY CELLS: " + listDirtyCells);
 		//System.out.println(graph.edgeSet()); //OK
 	}
 	
