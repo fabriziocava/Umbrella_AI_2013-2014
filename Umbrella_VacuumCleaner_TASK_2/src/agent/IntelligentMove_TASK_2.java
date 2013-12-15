@@ -83,28 +83,29 @@ public class IntelligentMove_TASK_2 {
 		int movement=0;
 		if(firstMove) {
 			movement = new Random().nextInt(5);
-			while(movement==SUCK)
+			while(movement==SUCK || isObstacleCell(movement))
 				movement = new Random().nextInt(5);
 		}
 		else {
 			if(foundBase) {
-				/*
 				generateGraph();
 				int index;
 				DijkstraShortestPath<Point, DefaultEdge> newDsp;
-				while(listDirtyCells.size()!=0) {
-					index=0;
-					dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(index));
-					for(int i=0; i<listDirtyCells.size(); i++) {
-						newDsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(i));
-						if(newDsp.getPathLength()<dsp.getPathLength()) {
-							dsp=newDsp;
-							index=i;
-						}
-					}
-				}
-				//System.out.println(dsp.getPath());
-				*/
+//				while(listDirtyCells.size()!=0) {
+//					index=0;
+//					dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(index));
+//					for(int i=0; i<listDirtyCells.size(); i++) {
+//						newDsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(i));
+//						if(newDsp.getPathLength()<dsp.getPathLength()) {
+//							dsp=newDsp;
+//							index=i;
+//						}
+//					}
+//					listDirtyCells.remove(index);
+//					System.out.println(dsp.getPath());
+//				}
+				dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(0));
+				System.out.println("MIN_PATH: " + dsp.getPath());
 				movement = NoOP; /*cambiare strategia quando è conoscenza della base*/
 			}
 			else {
@@ -249,12 +250,6 @@ public class IntelligentMove_TASK_2 {
 	public void setVep(LocalVacuumEnvironmentPerceptTaskEnvironmentB newVep) {
 		if(newVep.isMovedLastTime())
 			firstMove=false;
-		if(!foundBase) {
-			if(newVep.isOnBase()) {
-				base = new Point(agent);
-				foundBase = true;
-			}
-		}
 		int index = listMovements.size()-1;
 		if(newVep.isMovedLastTime()) {
 			setCell(vep.getState().getLocState());
@@ -290,6 +285,13 @@ public class IntelligentMove_TASK_2 {
 				//e.printStackTrace();
 			}
 		}
+		if(!foundBase) {
+			if(newVep.isOnBase()) {
+				base = new Point(agent);
+				foundBase = true;
+				setCell(base, LocationState.Clean);
+			}
+		}
 		this.vep=newVep;
 	}
 
@@ -312,12 +314,6 @@ public class IntelligentMove_TASK_2 {
 			if(!containsPoint(p))
 				listDirtyCells.add(new Point(p));
 		}
-	}
-	
-	public void setBase() {
-		if(!foundBase)
-			base = new Point(agent);
-		foundBase=true;
 	}
 	
 	private void setAgent(int move) {
@@ -343,11 +339,11 @@ public class IntelligentMove_TASK_2 {
 				try {
 					p1 = new Point(i,j);
 					p2 = new Point(i,j+1);
-					if(!(world[p1.x][p1.y].getState()==LocationState.Obstacle || world[p2.x][p2.y].getState()==LocationState.Obstacle))
+					if(!((world[p1.x][p1.y].getState()==LocationState.Obstacle) || (world[p2.x][p2.y].getState()==LocationState.Obstacle)))
 						graph.addEdge(p1, p2);
 					p1 = new Point(j,i);
 					p2 = new Point(j+1,i);
-					if(!(world[p1.x][p1.y].getState()==LocationState.Obstacle || world[p2.x][p2.y].getState()==LocationState.Obstacle))
+					if(!((world[p1.x][p1.y].getState()==LocationState.Obstacle) || (world[p2.x][p2.y].getState()==LocationState.Obstacle)))
 						graph.addEdge(p1, p2);
 				} catch (Exception e) {
 					
@@ -368,10 +364,10 @@ public class IntelligentMove_TASK_2 {
 			System.err.println();
 		}
 		
+		//System.out.println("BASE: " + agent);
 		//System.out.println(listMovements);
-		//System.out.println(base);
-		System.out.println(listDirtyCells);
-		//System.out.println(graph.edgeSet());
+		//System.out.println(listDirtyCells);
+		//System.out.println(graph.edgeSet()); //OK
 	}
 	
 }
