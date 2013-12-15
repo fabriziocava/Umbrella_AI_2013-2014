@@ -130,21 +130,21 @@ public class IntelligentMove_TASK_2 {
 								index=i;
 							}
 						}
+						DijkstraShortestPath<Point, DefaultEdge> dspToBase = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, base);
 						ArrayList<DefaultEdge> de_list;
 						Point currentPoint = new Point(agent);
 						ArrayList<Point> listPoints = new ArrayList<Point>();
-						listPoints.add(currentPoint);
-						de_list = (ArrayList<DefaultEdge>) dsp.getPath().getEdgeList();
-						for(DefaultEdge de : de_list) {
-							Point pTarget = graph.getEdgeTarget(de);
-							if(pTarget.equals(currentPoint))
-								pTarget = graph.getEdgeSource(de);
-							listPoints.add(pTarget);
-							currentPoint = pTarget;
-						}
-						DijkstraShortestPath<Point, DefaultEdge> dspToBase = new DijkstraShortestPath<Point, DefaultEdge>(graph, currentPoint, base);
-						double energyRequired = dsp.getPathLength()+dspToBase.getPathLength()+costSuck;
+						double energyRequired = dsp.getPathLength()*2+dspToBase.getPathLength()+costSuck;
 						if(energyRequired<=vep.getCurrentEnergy()) {
+							listPoints.add(currentPoint);
+							de_list = (ArrayList<DefaultEdge>) dsp.getPath().getEdgeList();
+							for(DefaultEdge de : de_list) {
+								Point pTarget = graph.getEdgeTarget(de);
+								if(pTarget.equals(currentPoint))
+									pTarget = graph.getEdgeSource(de);
+								listPoints.add(pTarget);
+								currentPoint = pTarget;
+							}
 							addListMovementsToCleanOrReturnToBase(listPoints);
 							/**
 							 * Elimina la cella dirty dalla lista
