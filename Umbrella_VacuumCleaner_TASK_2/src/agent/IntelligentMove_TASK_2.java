@@ -57,7 +57,7 @@ public class IntelligentMove_TASK_2 {
 		firstMove = true;
 		foundBase = false;
 		
-		THRESHOLD = vep.getInitialEnergy()*75/100; /*DA CAMBIARE IN BASE ALLA SIZE DELLA MAPPA*/
+		THRESHOLD = vep.getInitialEnergy()*75/100;
 		if(vep.getCurrentEnergy()<THRESHOLD)
 			isUnderThreshold = true;
 		else
@@ -178,7 +178,10 @@ public class IntelligentMove_TASK_2 {
 						}
 					}
 					else { /* esplorazione nei pressi della base se ho ancora energia */
-						move = NoOP;
+						move = nextMoveToExploration();
+	                    if(vep.getState().getLocState()==LocationState.Dirty) {
+                            move=SUCK;
+	                    }
 					}
 				}
 			}
@@ -282,7 +285,14 @@ public class IntelligentMove_TASK_2 {
 	
 	private int nextMoveToExploration() {
 		int index = stackOfMovements.size()-1;
-		int movement=stackOfMovements.get(index);
+		int movement=lastMovement;
+		new Random();
+		try {
+			movement=stackOfMovements.get(index);
+		} catch (Exception e) {
+			while(movement==SUCK || isObstacleCell(movement))
+				movement = new Random().nextInt(5);
+		}
 		int x = (int)agent.getX();
 		int y = (int)agent.getY();
 		int northX = x-1;
@@ -324,18 +334,22 @@ public class IntelligentMove_TASK_2 {
 		} catch (Exception e) {
 			nextMove.add(RIGHT);
 		}
-		new Random();
 		if(nextMove.size()==0) {
 			canAddMovements = false;
-			if(stackOfMovements.get(index)==UP)
-				movement=DOWN;
-			else if(stackOfMovements.get(index)==DOWN)
-				movement=UP;
-			else if(stackOfMovements.get(index)==LEFT)
-				movement=RIGHT;
-			else if(stackOfMovements.get(index)==RIGHT)
-				movement=LEFT;
-			stackOfMovements.remove(index);
+			try {
+				if(stackOfMovements.get(index)==UP)
+					movement=DOWN;
+				else if(stackOfMovements.get(index)==DOWN)
+					movement=UP;
+				else if(stackOfMovements.get(index)==LEFT)
+					movement=RIGHT;
+				else if(stackOfMovements.get(index)==RIGHT)
+					movement=LEFT;
+				stackOfMovements.remove(index);
+			} catch (Exception e) {
+				while(movement==SUCK || isObstacleCell(movement))
+					movement = new Random().nextInt(5);
+			}
 			lastMovement = movement;
 		}
 		else {
