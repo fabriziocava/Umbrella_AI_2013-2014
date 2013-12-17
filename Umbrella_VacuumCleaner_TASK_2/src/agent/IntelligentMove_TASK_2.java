@@ -51,6 +51,8 @@ public class IntelligentMove_TASK_2 {
 	/**TRUE se sto tornando alla base, FALSE altrimenti.*/
 	private boolean returnToBase; 
 	
+	private ArrayList<Integer> ultimateReturnToBase;
+	
 	public IntelligentMove_TASK_2(LocalVacuumEnvironmentPerceptTaskEnvironmentB vep) {
 		this.vep=vep;
 		
@@ -81,6 +83,7 @@ public class IntelligentMove_TASK_2 {
 		
 		graph = new SimpleGraph<Point, DefaultEdge>(DefaultEdge.class);
 		listMovementsToCleanOrReturnToBase = new ArrayList<Integer>();
+		ultimateReturnToBase = new ArrayList<Integer>();
 		
 		try {
 			Set<Action> actionsKeySet = vep.getActionEnergyCosts().keySet();
@@ -117,9 +120,13 @@ public class IntelligentMove_TASK_2 {
 					move = listMovementsToCleanOrReturnToBase.get(0);
 					listMovementsToCleanOrReturnToBase.remove(0);
 				}
+				else if(!ultimateReturnToBase.isEmpty()) {
+					move = ultimateReturnToBase.get(0);
+					ultimateReturnToBase.remove(0);					
+				}
 				else {
+					generateGraph();
 					if(!listDirtyCells.isEmpty()) {
-						generateGraph();
 						DijkstraShortestPath<Point, DefaultEdge> dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(0));
 						DijkstraShortestPath<Point, DefaultEdge> newDsp;
 						int index=0;
@@ -182,15 +189,39 @@ public class IntelligentMove_TASK_2 {
 	                    if(vep.getState().getLocState()==LocationState.Dirty) {
                             move=SUCK;
 	                    }
+	                    Point nextPoint = getNextAgentCoord(move);
+	                    DijkstraShortestPath<Point, DefaultEdge> dspToBase = new DijkstraShortestPath<Point, DefaultEdge>(graph, nextPoint, base);
+	    				double energyRequired = dspToBase.getPathLength()+1+costSuck;
+	    				if(energyRequired<=vep.getCurrentEnergy()) {
+	    					ArrayList<DefaultEdge> de_list;
+							Point currentPoint = new Point(agent);
+							ArrayList<Point> listPoints = new ArrayList<Point>();
+							listPoints.add(currentPoint);
+							de_list = (ArrayList<DefaultEdge>) dspToBase.getPath().getEdgeList();
+							for(DefaultEdge de : de_list) {
+								Point pTarget = graph.getEdgeTarget(de);
+								if(pTarget.equals(currentPoint))
+									pTarget = graph.getEdgeSource(de);
+								listPoints.add(pTarget);
+								currentPoint = pTarget;
+							}
+							addListMovementsToUltimateReturnToBase(listPoints);
+							/*
+							 * Prima mossa
+							 */
+							if(!ultimateReturnToBase.isEmpty()) {
+								move = ultimateReturnToBase.get(0);
+								ultimateReturnToBase.remove(0);
+							}
+	    				}
 					}
 				}
 			}
 			else {
 				move = nextMoveToExploration();
                 if(!isUnderThreshold) {
-                    if(vep.getState().getLocState()==LocationState.Dirty) {
+                    if(vep.getState().getLocState()==LocationState.Dirty)
                             move=SUCK;
-                    }
                 }
 			}
 		}
@@ -207,6 +238,13 @@ public class IntelligentMove_TASK_2 {
 		}
 		if(!returnToBase)
 			listMovementsToCleanOrReturnToBase.add(SUCK);
+	}
+	
+	private void addListMovementsToUltimateReturnToBase(ArrayList<Point> listPoints) {
+		for(int i=0; i<listPoints.size()-1; i++) {
+			ultimateReturnToBase.add(neighborhood(listPoints.get(i), listPoints.get(i+1)));
+		}
+		ultimateReturnToBase.add(NoOP);
 	}
 	
 	private int neighborhood(Point p1, Point p2) {
