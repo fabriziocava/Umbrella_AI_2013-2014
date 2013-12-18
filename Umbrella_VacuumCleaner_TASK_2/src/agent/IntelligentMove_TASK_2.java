@@ -189,30 +189,40 @@ public class IntelligentMove_TASK_2 {
 	                    if(vep.getState().getLocState()==LocationState.Dirty) {
                             move=SUCK;
 	                    }
-	                    Point nextPoint = getNextAgentCoord(move);
-	                    DijkstraShortestPath<Point, DefaultEdge> dspToBase = new DijkstraShortestPath<Point, DefaultEdge>(graph, nextPoint, base);
-	    				double energyRequired = dspToBase.getPathLength()+1+costSuck;
-	    				if(energyRequired<=vep.getCurrentEnergy()) {
-	    					ArrayList<DefaultEdge> de_list;
-							Point currentPoint = new Point(agent);
-							ArrayList<Point> listPoints = new ArrayList<Point>();
-							listPoints.add(currentPoint);
-							de_list = (ArrayList<DefaultEdge>) dspToBase.getPath().getEdgeList();
-							for(DefaultEdge de : de_list) {
-								Point pTarget = graph.getEdgeTarget(de);
-								if(pTarget.equals(currentPoint))
-									pTarget = graph.getEdgeSource(de);
-								listPoints.add(pTarget);
-								currentPoint = pTarget;
-							}
-							addListMovementsToUltimateReturnToBase(listPoints);
-							/*
-							 * Prima mossa
-							 */
-							if(!ultimateReturnToBase.isEmpty()) {
-								move = ultimateReturnToBase.get(0);
-								ultimateReturnToBase.remove(0);
-							}
+	                    if(move!=SUCK) {
+	                    	double energyRequired;
+	                    	if(agent.getX()==base.getX() && agent.getY()==base.getY()) {
+	                    		energyRequired = 1.0*2 + costSuck;
+	                    		if(energyRequired>vep.getCurrentEnergy())
+	                    			move = NoOP;
+	                    	}
+	                    	else { //DA VERIFICARE
+	                    		
+			                    Point nextPoint = getNextAgentCoord(move);
+			                    DijkstraShortestPath<Point, DefaultEdge> dspReturnToBase = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, base);
+			                    energyRequired = dspReturnToBase.getPathLength()+1.0*2+costSuck;
+			                    if(energyRequired>vep.getCurrentEnergy()) {
+			    					ArrayList<DefaultEdge> de_list;
+									Point currentPoint = new Point(agent);
+									ArrayList<Point> listPoints = new ArrayList<Point>();
+									listPoints.add(currentPoint);
+									de_list = (ArrayList<DefaultEdge>) dspReturnToBase.getPath().getEdgeList();
+									for(DefaultEdge de : de_list) {
+										Point pTarget = graph.getEdgeTarget(de);
+										if(pTarget.equals(currentPoint))
+											pTarget = graph.getEdgeSource(de);
+										listPoints.add(pTarget);
+										currentPoint = pTarget;
+									}
+									addListMovementsToUltimateReturnToBase(listPoints);
+									//Prima mossa
+									if(!ultimateReturnToBase.isEmpty()) {
+										move = ultimateReturnToBase.get(0);
+										ultimateReturnToBase.remove(0);
+									}
+			    				}
+			    				
+	                    	}
 	    				}
 					}
 				}
@@ -482,6 +492,7 @@ public class IntelligentMove_TASK_2 {
 	}
 	
 	private void generateGraph() {
+		graph = new SimpleGraph<Point, DefaultEdge>(DefaultEdge.class);
 		for(int i=0; i<N*2; i++)
 			for(int j=0; j<M*2; j++)
 				graph.addVertex(new Point(i,j));
