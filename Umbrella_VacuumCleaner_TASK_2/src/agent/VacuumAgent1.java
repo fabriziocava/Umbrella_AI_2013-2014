@@ -26,7 +26,7 @@ public class VacuumAgent1 extends AbstractAgent {
 					intelligentMoveTask2 = new IntelligentMove_TASK_2(vep);
 					firstStep = false;
 				}
-				intelligentMoveTask2.setVep(vep);
+				intelligentMoveTask2.setVep(vep);			
 				int move = intelligentMoveTask2.getMovement();
 				if(move!=IntelligentMove_TASK_2.NoOP) {
 					final Iterator<Action> iterator = actionsKeySet.iterator();
