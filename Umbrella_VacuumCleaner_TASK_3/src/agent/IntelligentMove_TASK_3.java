@@ -51,6 +51,8 @@ public class IntelligentMove_TASK_3 {
 	/**TRUE se sto tornando alla base, FALSE altrimenti.*/
 	private boolean returnToBase; 
 	
+	private ArrayList<Integer> ultimateReturnToBase;
+	
 	public IntelligentMove_TASK_3(LocalVacuumEnvironmentPerceptTaskEnvironmentB vep) {
 		this.vep=vep;
 		
@@ -81,6 +83,7 @@ public class IntelligentMove_TASK_3 {
 		
 		graph = new SimpleGraph<Point, DefaultEdge>(DefaultEdge.class);
 		listMovementsToCleanOrReturnToBase = new ArrayList<Integer>();
+		ultimateReturnToBase = new ArrayList<Integer>();
 		
 		try {
 			Set<Action> actionsKeySet = vep.getActionEnergyCosts().keySet();
@@ -110,16 +113,21 @@ public class IntelligentMove_TASK_3 {
                         move=SUCK;
                 }
             }
-		}
+		}//if(firstMove)
 		else {
 			if(foundBase) {
 				if(!listMovementsToCleanOrReturnToBase.isEmpty()) {
 					move = listMovementsToCleanOrReturnToBase.get(0);
 					listMovementsToCleanOrReturnToBase.remove(0);
 				}
+				else if(!ultimateReturnToBase.isEmpty()) {
+					move = ultimateReturnToBase.get(0);
+					ultimateReturnToBase.remove(0);					
+				}
 				else {
+					setCell(vep.getState().getLocState()); // non era sincronizzato con la posizine dell'agente
+					generateGraph();
 					if(!listDirtyCells.isEmpty()) {
-						generateGraph();
 						DijkstraShortestPath<Point, DefaultEdge> dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(0));
 						DijkstraShortestPath<Point, DefaultEdge> newDsp;
 						int index=0;
@@ -176,24 +184,61 @@ public class IntelligentMove_TASK_3 {
 							move = listMovementsToCleanOrReturnToBase.get(0);
 							listMovementsToCleanOrReturnToBase.remove(0);
 						}
-					}
+					}//if(!listDirtyCells.isEmpty()) 
 					else { /* esplorazione nei pressi della base se ho ancora energia */
 						move = nextMoveToExploration();
 	                    if(vep.getState().getLocState()==LocationState.Dirty) {
                             move=SUCK;
 	                    }
+	                    if(move!=SUCK) {
+	                    	double energyRequired;
+	                    	if(agent.getX()==base.getX() && agent.getY()==base.getY()) {
+	                    		energyRequired = 1.0*2 + costSuck;
+	                    		if(energyRequired>vep.getCurrentEnergy())
+	                    			move = NoOP;
+	                    	}
+	                    	else { //DA VERIFICARE   
+	                    		//!!! pare non entrare qua dentro quando finisce di pulire le celle che aveva lasciato sporche...
+	                    		// ricontrollare stampando l'energia:  istanza "prova1" quando all'inizio va a sinista...(o su)
+	                    		
+								Point nextPoint = getNextAgentCoord(move);
+			                    DijkstraShortestPath<Point, DefaultEdge> dspReturnToBase = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, base);
+			                    energyRequired = dspReturnToBase.getPathLength()+1.0*2+costSuck;
+			                    if(energyRequired>vep.getCurrentEnergy()) {
+			    					ArrayList<DefaultEdge> de_list;
+									Point currentPoint = new Point(agent);
+									ArrayList<Point> listPoints = new ArrayList<Point>();
+									listPoints.add(currentPoint);
+																
+									de_list = (ArrayList<DefaultEdge>) dspReturnToBase.getPath().getEdgeList();
+									for(DefaultEdge de : de_list) {
+										Point pTarget = graph.getEdgeTarget(de);
+										if(pTarget.equals(currentPoint))
+											pTarget = graph.getEdgeSource(de);
+										listPoints.add(pTarget);
+										currentPoint = pTarget;
+									}
+									addListMovementsToUltimateReturnToBase(listPoints);
+									//Prima mossa
+									if(!ultimateReturnToBase.isEmpty()) {
+										move = ultimateReturnToBase.get(0);
+										ultimateReturnToBase.remove(0);
+									}
+			    				}
+			    				
+	                    	}
+	    				}
 					}
-				}
-			}
+				}// listMovementsToCleanOrReturnToBase & ultimateReturnToBase EMPTY
+			}//if(foundBase)
 			else {
 				move = nextMoveToExploration();
                 if(!isUnderThreshold) {
-                    if(vep.getState().getLocState()==LocationState.Dirty) {
+                    if(vep.getState().getLocState()==LocationState.Dirty)
                             move=SUCK;
-                    }
                 }
 			}
-		}
+		}////if(!firstMove)
 		if(vep.getCurrentEnergy()==0)
 			move = NoOP;
 		if(canAddMovements)
@@ -207,6 +252,13 @@ public class IntelligentMove_TASK_3 {
 		}
 		if(!returnToBase)
 			listMovementsToCleanOrReturnToBase.add(SUCK);
+	}
+	
+	private void addListMovementsToUltimateReturnToBase(ArrayList<Point> listPoints) {
+		for(int i=0; i<listPoints.size()-1; i++) {
+			ultimateReturnToBase.add(neighborhood(listPoints.get(i), listPoints.get(i+1)));
+		}
+		ultimateReturnToBase.add(NoOP);
 	}
 	
 	private int neighborhood(Point p1, Point p2) {
@@ -373,7 +425,7 @@ public class IntelligentMove_TASK_3 {
 				else
 					setAgent(lastMovement);
 			} catch (Exception e) {
-				//e.printStackTrace();
+//				e.printStackTrace();
 			}
 		}
 		else {
@@ -396,7 +448,7 @@ public class IntelligentMove_TASK_3 {
 					stackOfMovements.remove(index);
 				}
 			} catch (Exception e) {
-				//e.printStackTrace();
+//				e.printStackTrace();
 			}
 		}
 		if(!foundBase) {
@@ -444,25 +496,29 @@ public class IntelligentMove_TASK_3 {
 	}
 	
 	private void generateGraph() {
+		graph = new SimpleGraph<Point, DefaultEdge>(DefaultEdge.class);
 		for(int i=0; i<N*2; i++)
 			for(int j=0; j<M*2; j++)
 				graph.addVertex(new Point(i,j));
 		Point p1, p2;
 		for(int i=0; i<N*2; i++)
 			for(int j=0; j<M*2-1; j++) {
+				// a ogni eccezione del primo il secondo non veniva calcolato...
 				try {
 					p1 = new Point(i,j);
 					p2 = new Point(i,j+1);
 					if(!((world[p1.x][p1.y].getState()==LocationState.Obstacle) || (world[p2.x][p2.y].getState()==LocationState.Obstacle)))
 						graph.addEdge(p1, p2);
-					p1 = new Point(j,i);
-					p2 = new Point(j+1,i);
+				} catch (Exception e) {	}
+				
+				try {
+					//dovrebbero funzionare entrambi
+//					p1 = new Point(j,i);	p2 = new Point(j+1,i);
+					p1 = new Point(i,j);	p2 = new Point(i+1,j);					
 					if(!((world[p1.x][p1.y].getState()==LocationState.Obstacle) || (world[p2.x][p2.y].getState()==LocationState.Obstacle)))
 						graph.addEdge(p1, p2);
-				} catch (Exception e) {
-					
-				}
-			}
+				} catch (Exception e) {	}
+			} 		
 	}
 	
 	public void print() {
@@ -482,6 +538,7 @@ public class IntelligentMove_TASK_3 {
 		//System.out.println(listMovements);
 		//System.out.println("DIRTY CELLS: " + listDirtyCells);
 		//System.out.println(graph.edgeSet()); //OK
+		//System.out.println("ENERGY: " + vep.getCurrentEnergy());
 	}
 	
 }

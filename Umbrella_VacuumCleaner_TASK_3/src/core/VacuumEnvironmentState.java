@@ -6,7 +6,12 @@ import instanceXMLParser.Instance;
 import java.awt.Point;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.jgrapht.alg.DijkstraShortestPath;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
 
 import aima.core.agent.Action;
 import aima.core.agent.Agent;
@@ -131,8 +136,35 @@ public class VacuumEnvironmentState implements EnvironmentState,
 	}
 
 	public double getDistanceFromBase(final Agent agent) {
-		// FIXME return minimum path
-		return 0;
+
+		final DefaultDirectedGraph<Point, DefaultEdge> graph = new DefaultDirectedGraph<Point, DefaultEdge>(
+				DefaultEdge.class);
+
+		// Fill the graph
+		for (final Point p : this.state.keySet())
+			graph.addVertex(p);
+
+		for (final Point p : this.state.keySet())
+			for (final Point p1 : this.state.keySet())
+				if (!p.equals(p1)
+						&& !this.state.get(p1).getLocState()
+								.equals(LocationState.Obstacle))
+					if (p1.getX() == p.getX() + 1 && p1.getY() == p.getY()
+							|| p1.getX() == p.getX() - 1
+							&& p1.getY() == p.getY()
+							|| p1.getY() == p.getY() + 1
+							&& p1.getX() == p.getX()
+							|| p1.getY() == p.getY() - 1
+							&& p1.getX() == p.getX())
+						graph.addEdge(p, p1);
+
+		final List<DefaultEdge> pathToTheBase = DijkstraShortestPath
+				.findPathBetween(graph, this.agentLocations.get(agent),
+						this.baseLocation);
+
+		// I assumed that there is always a path to the base
+		return pathToTheBase.size();
+
 	}
 
 	public double getEnergyCost(final Action action) {
@@ -153,8 +185,54 @@ public class VacuumEnvironmentState implements EnvironmentState,
 	}
 
 	public double getMaxDistanceToTheBase() {
-		// FIXME return maximum of the distances from each tile to the base
-		return this.N * this.M;
+
+		final DefaultDirectedGraph<Point, DefaultEdge> graph = new DefaultDirectedGraph<Point, DefaultEdge>(
+				DefaultEdge.class);
+
+		// Fill the graph
+		for (final Point p : this.state.keySet())
+			graph.addVertex(p);
+
+		for (final Point p : this.state.keySet())
+			for (final Point p1 : this.state.keySet())
+				if (!p.equals(p1)
+						&& !this.state.get(p1).getLocState()
+								.equals(LocationState.Obstacle))
+					if (p1.getX() == p.getX() + 1 && p1.getY() == p.getY()
+							|| p1.getX() == p.getX() - 1
+							&& p1.getY() == p.getY()
+							|| p1.getY() == p.getY() + 1
+							&& p1.getX() == p.getX()
+							|| p1.getY() == p.getY() - 1
+							&& p1.getX() == p.getX())
+						graph.addEdge(p, p1);
+
+		int maxDistance = -1;
+
+		// Find the max distance from the base
+		for (final Point point : this.state.keySet())
+			if (!this.state.get(point).getLocState()
+					.equals(LocationState.Obstacle)) {
+
+				final List<DefaultEdge> pathToTheBase = DijkstraShortestPath
+						.findPathBetween(graph, point, this.baseLocation);
+
+				if (pathToTheBase != null) {
+
+					if (pathToTheBase.size() > maxDistance)
+						maxDistance = pathToTheBase.size();
+
+				} else {
+					// THIS CANNOT BE HAPPEN IN AN ENVIRONMENT WELL FORMED
+					// ALL POINTS MUST BE REACHABLE
+					System.out.println("Environment malformed");
+					return -1;
+				}
+
+			}
+
+		return maxDistance;
+
 	}
 
 	public int getN() {
