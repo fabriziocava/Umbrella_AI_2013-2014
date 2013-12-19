@@ -62,23 +62,24 @@ public class VacuumEnvironment extends AbstractEnvironment {
 			System.out
 					.println("******************************************************************************");
 
+			this.updatePerformanceMeasure(agent);
+			
 		} else if (this.envState.getActionFromName("suck").equals(agentAction)) {
 			if (LocationState.Dirty.equals(this.envState
 					.getLocationState(this.envState.getAgentLocation(agent)))) {
 				this.envState.suckTile(this.envState.getAgentLocation(agent));
 				this.envState.updateCurrentEnergy(agent,
 						this.envState.getEnergyCost(agentAction));
-				this.updatePerformanceMeasure(agent);
 			}
-		} else if (agentAction.isNoOp())
+		} else if (agentAction.isNoOp()) {
 			// In the Vacuum Environment we consider things done if
 			// the agent generates a NoOp.
 			this.isDone = true;
-		else {
+			this.updatePerformanceMeasure(agent);
+		} else {
 			this.envState.moveAgent(agent, agentAction);
 			this.envState.updateCurrentEnergy(agent,
 					this.envState.getEnergyCost(agentAction));
-			this.updatePerformanceMeasure(agent);
 		}
 
 		return this.envState;
@@ -120,16 +121,19 @@ public class VacuumEnvironment extends AbstractEnvironment {
 
 	protected void updatePerformanceMeasure(final Agent agent) {
 
-		// final double ET = this.envState.getCurrentEnergy(agent);
+		final double ET = this.envState.getCurrentEnergy(agent);
 		final double BdT = this.envState.getDistanceFromBase(agent);
-		// final double E0 = this.envState.getInitialEnergy();
+		final double E0 = this.envState.getInitialEnergy();
 		final double CT = this.envState.getCleanedTiles(agent);
 		final double D0 = this.envState.getDirtyInitialTiles();
-		final double maxDb = this.envState.getMaxDistanceToTheBase();
+		// final double maxDb = this.envState.getMaxDistanceToTheBase();
+		final double avgSqrDist = this.envState.getAverageSquareDistance();
+		final double maxD = this.envState.getMaxDistanceBetweenTwoCells();
 
-		// Task Environment B
-		final Double performanceMeasure = Math.pow((CT + 1) / (D0 + 1), 2)
-				+ Math.pow((maxDb - BdT) / maxDb, 4);
+		// Task Environment C
+		final Double performanceMeasure = Math.pow((CT + 1) / (D0 + 1), 4)
+				+ Math.pow(avgSqrDist / maxD, 2)
+				* Math.ceil((ET - BdT + 1) / (E0 + 1));
 
 		this.performanceMeasures.put(agent, performanceMeasure);
 

@@ -87,7 +87,7 @@ public class IntelligentMove_TASK_3 {
 		
 		try {
 			Set<Action> actionsKeySet = vep.getActionEnergyCosts().keySet();
-			costSuck=vep.getActionEnergyCosts().get(actionsKeySet.iterator().next());
+			costSuck=vep.getActionEnergyCosts().get(actionsKeySet.iterator().next())*vep.getState().getDirtyAmount();
 		} catch (Exception e) {
 			costSuck = 1;
 		}
@@ -108,11 +108,13 @@ public class IntelligentMove_TASK_3 {
 			move = new Random().nextInt(5);
 			while(move==SUCK || isObstacleCell(move))
 				move = new Random().nextInt(5);
-            if(!isUnderThreshold) {
+            /* TASK 3
+			if(!isUnderThreshold) {
                 if(vep.getState().getLocState()==LocationState.Dirty) {
                         move=SUCK;
                 }
             }
+            */
 		}//if(firstMove)
 		else {
 			if(foundBase) {
@@ -125,7 +127,11 @@ public class IntelligentMove_TASK_3 {
 					ultimateReturnToBase.remove(0);					
 				}
 				else {
-					setCell(vep.getState().getLocState()); // non era sincronizzato con la posizine dell'agente
+					boolean isDirtyAmountEqualOne = false;
+					if(vep.getState().getLocState()==LocationState.Dirty)
+						if(vep.getState().getDirtyAmount()==1)
+							isDirtyAmountEqualOne = true;
+					setCell(vep.getState().getLocState(), isDirtyAmountEqualOne); // non era sincronizzato con la posizine dell'agente
 					generateGraph();
 					if(!listDirtyCells.isEmpty()) {
 						DijkstraShortestPath<Point, DefaultEdge> dsp = new DijkstraShortestPath<Point, DefaultEdge>(graph, agent, listDirtyCells.get(0));
@@ -209,16 +215,19 @@ public class IntelligentMove_TASK_3 {
 									Point currentPoint = new Point(agent);
 									ArrayList<Point> listPoints = new ArrayList<Point>();
 									listPoints.add(currentPoint);
-																
-									de_list = (ArrayList<DefaultEdge>) dspReturnToBase.getPath().getEdgeList();
-									for(DefaultEdge de : de_list) {
-										Point pTarget = graph.getEdgeTarget(de);
-										if(pTarget.equals(currentPoint))
-											pTarget = graph.getEdgeSource(de);
-										listPoints.add(pTarget);
-										currentPoint = pTarget;
+									try {							
+										de_list = (ArrayList<DefaultEdge>) dspReturnToBase.getPath().getEdgeList();
+										for(DefaultEdge de : de_list) {
+											Point pTarget = graph.getEdgeTarget(de);
+											if(pTarget.equals(currentPoint))
+												pTarget = graph.getEdgeSource(de);
+											listPoints.add(pTarget);
+											currentPoint = pTarget;
+										}
+										addListMovementsToUltimateReturnToBase(listPoints);
+									} catch (Exception e) {
+										
 									}
-									addListMovementsToUltimateReturnToBase(listPoints);
 									//Prima mossa
 									if(!ultimateReturnToBase.isEmpty()) {
 										move = ultimateReturnToBase.get(0);
@@ -233,10 +242,12 @@ public class IntelligentMove_TASK_3 {
 			}//if(foundBase)
 			else {
 				move = nextMoveToExploration();
-                if(!isUnderThreshold) {
+                /* TASK 3
+				if(!isUnderThreshold) {
                     if(vep.getState().getLocState()==LocationState.Dirty)
                             move=SUCK;
                 }
+                */
 			}
 		}////if(!firstMove)
 		if(vep.getCurrentEnergy()==0)
@@ -418,7 +429,11 @@ public class IntelligentMove_TASK_3 {
 			isUnderThreshold = true;
 		int index = stackOfMovements.size()-1;
 		if(newVep.isMovedLastTime()) {
-			setCell(vep.getState().getLocState());
+			boolean isDirtyAmountEqualOne = false;
+			if(vep.getState().getLocState()==LocationState.Dirty)
+				if(vep.getState().getDirtyAmount()==1)
+					isDirtyAmountEqualOne = true;
+			setCell(vep.getState().getLocState(), isDirtyAmountEqualOne);
 			try {
 				if(canAddMovements)
 					setAgent(stackOfMovements.get(index));
@@ -432,7 +447,7 @@ public class IntelligentMove_TASK_3 {
 		else {
 			try {
 				if(stackOfMovements.get(index)==SUCK) {
-					setCell(LocationState.Clean);
+					setCell(LocationState.Clean, false);
 					stackOfMovements.remove(index);
 				}
 				else {
@@ -463,14 +478,16 @@ public class IntelligentMove_TASK_3 {
 	}
 
 	
-	public void setCell(LocationState state) {
+	public void setCell(LocationState state, boolean isDirtyAmountEqualOne) {
 		int x = (int)agent.getX();
 		int y = (int)agent.getY();
 		try {
 			world[x][y]=new MyCell(state, true);
 			if(state == LocationState.Dirty) {
-				if(!containsPoint(agent))
-					listDirtyCells.add(new Point(agent));
+				if(isDirtyAmountEqualOne) {
+					if(!containsPoint(agent))
+						listDirtyCells.add(new Point(agent));
+				}
 			}
 		} catch (Exception e) {	
 			

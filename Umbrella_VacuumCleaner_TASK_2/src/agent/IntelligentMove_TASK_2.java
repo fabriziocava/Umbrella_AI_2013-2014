@@ -209,16 +209,19 @@ public class IntelligentMove_TASK_2 {
 									Point currentPoint = new Point(agent);
 									ArrayList<Point> listPoints = new ArrayList<Point>();
 									listPoints.add(currentPoint);
-																
-									de_list = (ArrayList<DefaultEdge>) dspReturnToBase.getPath().getEdgeList();
-									for(DefaultEdge de : de_list) {
-										Point pTarget = graph.getEdgeTarget(de);
-										if(pTarget.equals(currentPoint))
-											pTarget = graph.getEdgeSource(de);
-										listPoints.add(pTarget);
-										currentPoint = pTarget;
+									try {							
+										de_list = (ArrayList<DefaultEdge>) dspReturnToBase.getPath().getEdgeList();
+										for(DefaultEdge de : de_list) {
+											Point pTarget = graph.getEdgeTarget(de);
+											if(pTarget.equals(currentPoint))
+												pTarget = graph.getEdgeSource(de);
+											listPoints.add(pTarget);
+											currentPoint = pTarget;
+										}
+										addListMovementsToUltimateReturnToBase(listPoints);
+									} catch (Exception e) {
+										
 									}
-									addListMovementsToUltimateReturnToBase(listPoints);
 									//Prima mossa
 									if(!ultimateReturnToBase.isEmpty()) {
 										move = ultimateReturnToBase.get(0);

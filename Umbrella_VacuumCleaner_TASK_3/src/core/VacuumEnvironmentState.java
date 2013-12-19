@@ -115,6 +115,11 @@ public class VacuumEnvironmentState implements EnvironmentState,
 		return this.agentLocations.get(a);
 	}
 
+	public double getAverageSquareDistance() {
+		// TODO Auto-generated method stub
+		return 1;
+	}
+
 	public Point getBaseLocation() {
 		return this.baseLocation;
 	}
@@ -184,6 +189,11 @@ public class VacuumEnvironmentState implements EnvironmentState,
 		return this.M;
 	}
 
+	public double getMaxDistanceBetweenTwoCells() {
+		// TODO Auto-generated method stub
+		return 1;
+	}
+
 	public double getMaxDistanceToTheBase() {
 
 		final DefaultDirectedGraph<Point, DefaultEdge> graph = new DefaultDirectedGraph<Point, DefaultEdge>(
@@ -210,26 +220,24 @@ public class VacuumEnvironmentState implements EnvironmentState,
 		int maxDistance = -1;
 
 		// Find the max distance from the base
-		for (final Point point : this.state.keySet())
-			if (!this.state.get(point).getLocState()
-					.equals(LocationState.Obstacle)) {
+		for (final Point point : this.state.keySet()) {
 
-				final List<DefaultEdge> pathToTheBase = DijkstraShortestPath
-						.findPathBetween(graph, point, this.baseLocation);
+			final List<DefaultEdge> pathToTheBase = DijkstraShortestPath
+					.findPathBetween(graph, point, this.baseLocation);
 
-				if (pathToTheBase != null) {
+			if (pathToTheBase != null) {
 
-					if (pathToTheBase.size() > maxDistance)
-						maxDistance = pathToTheBase.size();
+				if (pathToTheBase.size() > maxDistance)
+					maxDistance = pathToTheBase.size();
 
-				} else {
-					// THIS CANNOT BE HAPPEN IN AN ENVIRONMENT WELL FORMED
-					// ALL POINTS MUST BE REACHABLE
-					System.out.println("Environment malformed");
-					return -1;
-				}
-
+			} else {
+				// THIS CANNOT BE HAPPEN IN AN ENVIRONMENT WELL FORMED
+				// ALL POINTS MUST BE REACHABLE
+				System.out.println("Environment malformed");
+				return -1;
 			}
+
+		}
 
 		return maxDistance;
 

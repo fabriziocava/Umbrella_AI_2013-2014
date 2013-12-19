@@ -50,6 +50,11 @@ public class VacuumView extends EmptyEnvironmentView {
 		super.agentActed(agent, action, resultingState);
 	}
 
+	public int getDirtyAmount(final int i, final int j) {
+		return ((VacuumEnvironmentState) this.getVacuumEnv().getCurrentState())
+				.getCellLogicalState(new Point(i, j)).getDirtyAmount();
+	}
+
 	public LocationState getLocationState(final int i, final int j) {
 		return ((VacuumEnvironmentState) this.getVacuumEnv().getCurrentState())
 				.getLocationState(new Point(i, j));
@@ -95,11 +100,15 @@ public class VacuumView extends EmptyEnvironmentView {
 		super.paintComponent(g);
 		for (int i = 0; i < this.getN(); i++)
 			for (int j = 0; j < this.getM(); j++) {
-				if (this.getLocationState(i, j) == LocationState.Dirty)
+				if (this.getLocationState(i, j) == LocationState.Dirty) {
 					g.drawImage(this.imgDirty, j * this.optimalSizeCellSize(),
 							i * this.optimalSizeCellSize(),
 							this.optimalSizeCellSize(),
 							this.optimalSizeCellSize(), null);
+					g.drawString(this.getDirtyAmount(i, j) + "",
+							j * this.optimalSizeCellSize() + 2,
+							i * this.optimalSizeCellSize() + 12);
+				}
 				if (this.getLocationState(i, j) == LocationState.Obstacle)
 					g.drawImage(this.imgObstacle,
 							j * this.optimalSizeCellSize(),

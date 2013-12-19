@@ -18,12 +18,12 @@
     <down>1.0</down>
     <left>1.0</left>
     <right>1.0</right>
-    <suck>2.0</suck>
+    <suck>1.0</suck>
   </action_costs>
   <agent>
     <x>0</x>
-    <y>0</y>
-    <energy>125.0</energy>
+    <y>3</y>
+    <energy>40.0</energy>
   </agent>
   <base>
     <x>0</x>
