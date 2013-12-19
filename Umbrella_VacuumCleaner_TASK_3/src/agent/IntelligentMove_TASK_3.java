@@ -422,8 +422,9 @@ public class IntelligentMove_TASK_3 {
 			try {
 				if(canAddMovements)
 					setAgent(stackOfMovements.get(index));
-				else
+				else {
 					setAgent(lastMovement);
+				}
 			} catch (Exception e) {
 //				e.printStackTrace();
 			}
@@ -465,26 +466,35 @@ public class IntelligentMove_TASK_3 {
 	public void setCell(LocationState state) {
 		int x = (int)agent.getX();
 		int y = (int)agent.getY();
-		world[x][y]=new MyCell(state, true);
-		if(state == LocationState.Dirty) {
-			if(!containsPoint(agent))
-				listDirtyCells.add(new Point(agent));
+		try {
+			world[x][y]=new MyCell(state, true);
+			if(state == LocationState.Dirty) {
+				if(!containsPoint(agent))
+					listDirtyCells.add(new Point(agent));
+			}
+		} catch (Exception e) {	
+			
 		}
 	}
 	
 	public void setCell(Point p, LocationState state) {
 		int x = (int)p.getX();
 		int y = (int)p.getY();
-		world[x][y]=new MyCell(state, true);
-		if(state == LocationState.Dirty) {
-			if(!containsPoint(p))
-				listDirtyCells.add(new Point(p));
+		try {
+			world[x][y]=new MyCell(state, true);
+			if(state == LocationState.Dirty) {
+				if(!containsPoint(p))
+					listDirtyCells.add(new Point(p));
+			}
+		} catch (Exception e) {
+			
 		}
 	}
 	
 	private void setAgent(int move) {
 		Point np = getNextAgentCoord(move);
-		agent.setLocation(np.x, np.y);
+		agent = new Point(np);
+		//System.out.println(agent);
 	}
 	
 	private boolean containsPoint(Point p) {
