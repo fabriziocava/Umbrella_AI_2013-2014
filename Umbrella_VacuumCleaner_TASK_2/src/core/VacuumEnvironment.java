@@ -53,16 +53,16 @@ public class VacuumEnvironment extends AbstractEnvironment {
 		if (!agentAction.isNoOp()
 				&& this.envState.getCurrentEnergy(agent) < this.envState
 						.getEnergyCost(agentAction)) {
+
 			this.isDone = true;
 			System.out
-					.println("************************************************************");
+					.println("******************************************************************************");
 			System.out
-					.println("Agent killed by the system because it tried to use more energy than it has");
+					.println("* Agent killed by the system because it tried to use more energy than it has *");
 			System.out
-					.println("************************************************************");
-		}
+					.println("******************************************************************************");
 
-		if (this.envState.getActionFromName("suck").equals(agentAction)) {
+		} else if (this.envState.getActionFromName("suck").equals(agentAction)) {
 			if (LocationState.Dirty.equals(this.envState
 					.getLocationState(this.envState.getAgentLocation(agent)))) {
 				this.envState.suckTile(this.envState.getAgentLocation(agent));
@@ -127,6 +127,7 @@ public class VacuumEnvironment extends AbstractEnvironment {
 		final double D0 = this.envState.getDirtyInitialTiles();
 		final double maxDb = this.envState.getMaxDistanceToTheBase();
 
+		// Task Environment B
 		final Double performanceMeasure = Math.pow((CT + 1) / (D0 + 1), 2)
 				+ Math.pow((maxDb - BdT) / maxDb, 4);
 

@@ -538,6 +538,7 @@ public class IntelligentMove_TASK_2 {
 		//System.out.println(listMovements);
 		//System.out.println("DIRTY CELLS: " + listDirtyCells);
 		//System.out.println(graph.edgeSet()); //OK
+		//System.out.println("ENERGY: " + vep.getCurrentEnergy());
 	}
 	
 }
