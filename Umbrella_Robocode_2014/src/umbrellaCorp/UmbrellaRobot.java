@@ -1,4 +1,4 @@
-package man;
+package umbrellaCorp;
 import robocode.*;
 
 public class UmbrellaRobot extends Robot {
