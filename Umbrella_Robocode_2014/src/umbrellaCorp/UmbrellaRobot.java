@@ -5,6 +5,7 @@ public class UmbrellaRobot extends Robot {
 	
 	public void run() {
 		while(true) {
+			
 			ahead(100);
 			turnGunRight(360);
 			back(100);
