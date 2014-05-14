@@ -3,7 +3,7 @@ import java.awt.Color;
 
 import robocode.*;
 
-public class UmbrellaRobot_1to1 extends AdvancedRobot {
+public class UmbrellaRobot_1on1 extends AdvancedRobot {
 	
 	public void run() {
 		setColors(Color.red,Color.white,Color.white);	
