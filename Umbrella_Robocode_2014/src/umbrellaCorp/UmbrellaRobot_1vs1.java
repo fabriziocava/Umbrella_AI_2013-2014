@@ -29,12 +29,27 @@ public class UmbrellaRobot_1vs1 extends AdvancedRobot {
 	 * EVENT
 	 */
 	
+	public void onCustomEvent(CustomEvent e) {
+		
+	}
+	
 	/*
 	 * ON BULLET HIT
 	 * is called when a bullet your robot fires, reaches a target.
 	 */
 	public void onBulletHit(BulletHitEvent e) {
-	
+		currentHit++;
+		if(currentHit>=maxHit) {
+			/*
+			 * movimento a seminare l'avversario
+			 */
+			ahead(500);
+			turnLeft(30);
+			back(50);
+			turnRight(300);
+			currentHit = 0;
+			currentAttempts = 0;
+		}
 	}
 	
 	/*
