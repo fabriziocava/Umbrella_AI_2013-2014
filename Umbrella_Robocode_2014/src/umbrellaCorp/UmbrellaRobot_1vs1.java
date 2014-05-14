@@ -16,8 +16,10 @@ public class UmbrellaRobot_1vs1 extends AdvancedRobot {
 	int currentHit = 0;
 	
 	int turnDirection = 1;
-	
+		
 	public void run() {
+		System.out.println("X:" + getX());
+		System.out.println("Y:" + getY());
 		setColors(Color.red,Color.white,Color.white);
 		while(true) {
 			turnGunRight(10);
@@ -38,18 +40,7 @@ public class UmbrellaRobot_1vs1 extends AdvancedRobot {
 	 * is called when a bullet your robot fires, reaches a target.
 	 */
 	public void onBulletHit(BulletHitEvent e) {
-		currentHit++;
-		if(currentHit>=maxHit) {
-			/*
-			 * movimento a seminare l'avversario
-			 */
-			ahead(500);
-			turnLeft(30);
-			back(50);
-			turnRight(300);
-			currentHit = 0;
-			currentAttempts = 0;
-		}
+		currentAttempts = 0;
 	}
 	
 	/*
@@ -62,10 +53,21 @@ public class UmbrellaRobot_1vs1 extends AdvancedRobot {
 	
 	/*
 	 * ON HIT BY BULLET
-	 * is called when your bit is hit.
+	 * is called when your robot is hit by bullet.
 	 */
 	public void onHitByBullet(HitByBulletEvent e) {
-		currentAttempts = 0;
+		currentHit++;
+		if(currentHit>=maxHit) {
+			/*
+			 * movimento per seminare l'avversario
+			 */
+//			ahead(500);
+//			turnLeft(30);
+//			back(50);
+//			turnRight(300);
+			currentHit = 0;
+			currentAttempts = 0;
+		}
 	}
 	
 	/*
@@ -86,15 +88,7 @@ public class UmbrellaRobot_1vs1 extends AdvancedRobot {
 			 */
 			if(e.getDistance()<=maxDistance) {
 				if(currentAttempts>=maxAttempts) {
-					/* VEDERE SE CONVIENE AVVICINARSI AL ROBOT O AD UN ANGOLO
-					 * Move to robot
-					 */
-					if(e.getBearing()>=0)
-						turnDirection = 1;
-					else
-						turnDirection = -1;
-					turnRight(e.getBearing());
-					ahead(getCloser(e.getDistance()));
+					goOnBorder();
 					currentAttempts = 0;
 				}
 				else {
@@ -111,6 +105,7 @@ public class UmbrellaRobot_1vs1 extends AdvancedRobot {
 				else
 					turnDirection = -1;
 				turnRight(e.getBearing());
+				//setTurnGunRight(e.getBearing());
 				ahead(getCloser(e.getDistance()));
 			}
 		} // otherwise just set the gun to turn.
@@ -133,7 +128,18 @@ public class UmbrellaRobot_1vs1 extends AdvancedRobot {
 	 * is called when your robot crash another
 	 */
 	public void onHitRobot(HitRobotEvent e) {
-		
+		if(e.getBearing()>-10 && e.getBearing()<10) {
+			fire(3);
+			/*
+			 * adeguare in base alla distanza
+			 */
+		}
+		if(e.isMyFault()) {
+			turnRight(10);
+			/*
+			 * cercare di non andare a sbattere ai muri
+			 */
+		}
 	}
 	
 	/*
@@ -149,12 +155,17 @@ public class UmbrellaRobot_1vs1 extends AdvancedRobot {
 	 * END_EVENT
 	 */
 	
+	
+	
 	/*
 	 * MOVEMENT
 	 */
 	
-	public void moveToRobot(Event e) {
-				
+	public void goOnBorder() {
+		if(getY()>getBattleFieldHeight()/2)
+			ahead(getBattleFieldHeight()+getY());
+		else
+			ahead(getBattleFieldHeight()-getY());
 	}
 	
 	/*
