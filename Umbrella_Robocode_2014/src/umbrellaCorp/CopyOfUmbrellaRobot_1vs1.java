@@ -8,15 +8,25 @@ import static robocode.util.Utils.normalRelativeAngleDegrees;
 
 public class CopyOfUmbrellaRobot_1vs1 extends AdvancedRobot {
 	
-			
+	private int moveDirection = 1;
+	private int wallMargin = 60; 
+	
+	private double idealDistance;
+	private double enemyDistance = 0.0;
+	private double enemyBearing = 0.0;
+	
 	public void run() {
+		idealDistance = Math.max(getBattleFieldWidth()/2, getBattleFieldHeight()/2);
+				
 		setColors(Color.red,Color.white,Color.white);
-		goOnBorder();
+		
+		//goOnBorder();
 //		turnRadarRightRadians(Double.POSITIVE_INFINITY);
 		turnGunRightRadians(Double.POSITIVE_INFINITY);
 		while(true) {
-			move();
 			scan();
+			//move();
+			doMove();
 		}
 	}
 	
@@ -65,6 +75,8 @@ public class CopyOfUmbrellaRobot_1vs1 extends AdvancedRobot {
 		double radarTurn = getHeadingRadians()+e.getBearingRadians()-getRadarHeadingRadians();
 //		setTurnRadarRightRadians(Utils.normalRelativeAngle(radarTurn));
 		setTurnGunRightRadians(Utils.normalRelativeAngle(radarTurn));
+		enemyDistance = e.getDistance();
+		enemyBearing = e.getBearing();
 	}
 
 	/*
@@ -102,7 +114,18 @@ public class CopyOfUmbrellaRobot_1vs1 extends AdvancedRobot {
 	}
 	
 	public void move() {
+		if(enemyDistance>=idealDistance) {
+//			turnRight(enemyBearing);
+//			ahead(Math.abs(idealDistance-enemyDistance));
+		}
 		
+	}
+	
+	public void doMove() {
+		if(getVelocity()==0)
+			moveDirection *= -1;
+		setTurnRight(enemyBearing+90);
+		setAhead(100*moveDirection);
 	}
 	
 	/*
