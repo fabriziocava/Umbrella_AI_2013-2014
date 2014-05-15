@@ -18,11 +18,10 @@ public class UmbrellaRobot_1vs1 extends AdvancedRobot {
 	int turnDirection = 1;
 		
 	public void run() {
-		System.out.println("X:" + getX());
-		System.out.println("Y:" + getY());
 		setColors(Color.red,Color.white,Color.white);
 		while(true) {
 			turnGunRight(10);
+			
 		}
 	}
 	
