@@ -1,6 +1,9 @@
 package umbrellaCorp;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -244,7 +247,18 @@ public class WaveSurfing {
 	
 
 	public void onPaint(Graphics2D g) {
-
+		g.setColor(Color.RED);
+		for(EnemyWave wave : enemyWaves) {
+			draw(g, wave);
+		}
+	}
+	
+	public void draw(Graphics2D g, EnemyWave ew) {
+		final double x = ew.fireLocation.getX() - ew.distanceTraveled;
+		final double y = ew.fireLocation.getY() - ew.distanceTraveled;
+		final double diameter = ew.distanceTraveled*2;
+		Shape circle = new Ellipse2D.Double(x, y, diameter, diameter);
+		g.draw(circle);
 	}
 
 }
