@@ -241,6 +241,7 @@ public class WaveSurfing {
 	    return angle; // you may want to normalize this
 		
 	}
+	
 
 	public void onPaint(Graphics2D g) {
 

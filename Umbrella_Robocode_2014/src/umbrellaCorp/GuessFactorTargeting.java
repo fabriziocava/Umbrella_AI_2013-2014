@@ -105,7 +105,7 @@ public class GuessFactorTargeting {
 	
 	
 	public double optimalPower(double distance) {
-		final double minPower = .1;
+		final double minPower = 0.1;
 		final double maxPower = 3.0;
 		final double minDistance = 150;
 		double currentEnergy = mr.getEnergy();

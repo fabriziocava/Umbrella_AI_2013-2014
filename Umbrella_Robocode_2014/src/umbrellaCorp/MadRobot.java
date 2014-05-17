@@ -4,11 +4,15 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 
 import robocode.*;
+import robocode.util.Utils;
 
 public class MadRobot extends AdvancedRobot {
 	
 	WaveSurfing ws = new WaveSurfing(this);
 	GuessFactorTargeting gft = new GuessFactorTargeting(this);
+	
+	private final int HIT_MAX = 5;
+	private int currentHit = 0;
 	
 	public void run() {
 		init();
@@ -37,7 +41,7 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onBulletHit(BulletHitEvent e) {
-		
+		currentHit = 0;
 	}
 	
 	/*
@@ -46,7 +50,7 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onBulletMissed(BulletMissedEvent e) {
-
+		currentHit++;
 	}
 	
 	/*
@@ -66,6 +70,11 @@ public class MadRobot extends AdvancedRobot {
 	public void onScannedRobot(ScannedRobotEvent e) {
 		ws.onScannedRobot(e);
 		gft.onScannedRobot(e);
+		if(currentHit>=HIT_MAX) {
+			goToAngle(e.getBearingRadians(), e.getDistance());
+			currentHit = 0;
+		}
+			
 	}
 
 	/*
@@ -105,6 +114,34 @@ public class MadRobot extends AdvancedRobot {
 	
 	public void init() {
 		setColors(Color.red,Color.white,Color.white);
+	}
+	
+	public void goTo(double x, double y) {
+		x -= getX();
+		y -= getY();
+		
+		double angleToTarget = Math.atan2(x, y);
+		double targetAngle = Utils.normalRelativeAngle(angleToTarget-getHeadingRadians());
+		double distance = Math.hypot(x, y);
+		double turnAngle = Math.atan(Math.tan(targetAngle));
+		setTurnRightRadians(turnAngle);
+		if(targetAngle==turnAngle) {
+			setAhead(distance);
+		}
+		else {
+			setBack(distance);
+		}
+	}
+	
+	public void goToAngle(double angleToTarget, double distance) {
+		double turnAngle = Math.atan(Math.tan(angleToTarget));
+		setTurnRightRadians(turnAngle);
+		if(angleToTarget==turnAngle) {
+			setAhead(distance);
+		}
+		else {
+			setBack(distance);
+		}
 	}
 	
 }
