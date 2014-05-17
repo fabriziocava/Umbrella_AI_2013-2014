@@ -5,7 +5,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import robocode.Robot;
 import robocode.ScannedRobotEvent;
 import robocode.util.Utils;
 
@@ -28,10 +27,10 @@ class WaveBullet {
 	
 	public boolean checkHit(double enemyX, double enemyY, long currentTime) {
 		if (Point2D.distance(startX, startY, enemyX, enemyY) <= (currentTime - fireTime) * Util.bulletVelocity(power)) {
-			double desiredAngle = Util.absoluteBearing(new Point2D.Double(startX,startY), new Point2D.Double(enemyX,enemyY));
-			double angleOffset = Utils.normalRelativeAngle(desiredAngle - startBearing);
+			double desiredDirection = Util.absoluteBearing(new Point2D.Double(startX,startY), new Point2D.Double(enemyX,enemyY));
+			double angleOffset = Utils.normalRelativeAngle(desiredDirection - startBearing);
 			double guessFactor = Util.limit(-1, angleOffset / Util.maxEscapeAngle(Util.bulletVelocity(power)), 1) * direction;
-			int index = (int) Math.round((returnSegment.length - 1) / 2 * (guessFactor + 1));
+			int index = (int) Math.round((returnSegment.length-1)/2 * (guessFactor+1));
 			returnSegment[index]++;
 			return true;
 		}
@@ -43,23 +42,27 @@ class WaveBullet {
 
 public class GuessFactorTargeting {
 
-	List<WaveBullet> waves = new ArrayList<WaveBullet>();
-	MadRobot mr;
-	int[] stats = new int[31];
-	int direction = 1;
+	private List<WaveBullet> waves = new ArrayList<WaveBullet>();
+	private MadRobot mr;
+	public static int STATS_SIZE=31;
+	private int[] stats = new int[STATS_SIZE];
+	private int direction = 1;
+	
+	private Point2D.Double myLocation = new Point2D.Double();
+	private Point2D.Double enemyLocation = new Point2D.Double();
 	
 	public GuessFactorTargeting(MadRobot mr) {
 		this.mr = mr;
 	}
 	
-	double energyThreshold = 10;
-
 	public void onScannedRobot(ScannedRobotEvent e) {
 
 		double absBearing = mr.getHeadingRadians() + e.getBearingRadians();
 
-		double ex = mr.getX() + Math.sin(absBearing) * e.getDistance();
-		double ey = mr.getY() + Math.sin(absBearing) * e.getDistance();
+		myLocation.setLocation(mr.getX(), mr.getY());
+		enemyLocation.setLocation(Util.project(myLocation, absBearing, e.getDistance()));		
+		double ex = enemyLocation.x;
+		double ey = enemyLocation.y;
 		
 		for (int i=0; i<waves.size(); i++) {
 			WaveBullet currentWave = (WaveBullet) waves.get(i);
@@ -82,8 +85,8 @@ public class GuessFactorTargeting {
 		
 		WaveBullet newWave = new WaveBullet(mr.getX(), mr.getY(), absBearing, power, direction, mr.getTime(), currentStats);
 		
-		int bestIndex=15;
-		for(int i=0; i<31; i++)
+		int bestIndex=(STATS_SIZE-1)/2;
+		for(int i=0; i<STATS_SIZE; i++)
 			if(currentStats[bestIndex]<currentStats[i])
 				bestIndex=i;
 		double guessFactor = (double) (bestIndex-(stats.length-1)/2)/((stats.length-1)/2);
@@ -94,9 +97,9 @@ public class GuessFactorTargeting {
 		if(mr.setFireBullet(power)!=null)
 			waves.add(newWave);
 		
-//		if(mr.getGunHeat()==0 && gunAdjust<Math.atan2(9, e.getDistance()) && mr.setFireBullet(power)!=null) {
-//			waves.add(newWave);
-//		}
+		if(mr.getGunHeat()==0 && gunAdjust<Math.atan2(9, e.getDistance()) && mr.setFireBullet(power)!=null) {
+			waves.add(newWave);
+		}
 				
 	}
 
