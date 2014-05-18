@@ -10,7 +10,6 @@ public class MadRobot extends AdvancedRobot {
 	
 	WaveSurfing ws = new WaveSurfing(this);
 	GuessFactorTargeting gft = new GuessFactorTargeting(this);
-	MinimumRiskMovement mrm = new MinimumRiskMovement(this);
 	
 	private final int HIT_MAX = 4;
 	private int currentHit = 0;
