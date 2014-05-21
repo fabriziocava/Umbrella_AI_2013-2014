@@ -44,6 +44,7 @@ class WaveBullet {
  * 	1 avanti fino al punto più lontano che può raggiungere andando a max velocità, 
  * -1 dietro,
  *  0 sta fermo 
+ *  
  */
 public class GuessFactorTargeting {
 
