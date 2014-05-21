@@ -39,7 +39,12 @@ class WaveBullet {
 	
 }
 	
-
+/*
+ * Guess fra -1 e 1 per capire dove sta andando il robot.
+ * 	1 avanti fino al punto più lontano che può raggiungere andando a max velocità, 
+ * -1 dietro,
+ *  0 sta fermo 
+ */
 public class GuessFactorTargeting {
 
 	private List<WaveBullet> waves = new ArrayList<WaveBullet>();
