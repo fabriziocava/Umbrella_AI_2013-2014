@@ -44,7 +44,7 @@ public class WaveSurfing {
 	/*
 	 * Bisogna tenere traccia:
 	 * - della nostra posizione e di quella del nemico
-	 * - del livello di energia del nemico (energy drop per sapere che è stato sparato un proiettile)
+	 * - del livello di energia del nemico (energy drop per sapere che e' stato sparato un proiettile)
 	 * - lista di onde su cui fare statistiche
 	 * - lista della nostra direzione, relativa ai turni giocati dal nemico
 	 * - lista degli angoli (in valore assoluto) rispetto ai nemici  
@@ -102,7 +102,7 @@ public class WaveSurfing {
 			// AGGIORNO LE VARIABILI RELATIVE AL PROIETTILE
 			ew.fireTime = mr.getTime()-1; // turno di gioco del nemico, precedente al mio
 			ew.bulletVelocity = Util.bulletVelocity(bulletPower);
-			ew.distanceTraveled = Util.bulletVelocity(bulletPower); // la distanza percorsa è uguale alla velocità del proiettile?
+			ew.distanceTraveled = Util.bulletVelocity(bulletPower); // la distanza percorsa e' uguale alla velocita'� del proiettile?
 			ew.direction = ((Integer) surfDirections.get(2)).intValue();
 			ew.directAngle = ((Double) surfAbsBearings.get(2)).doubleValue();
 			ew.fireLocation = (Point2D.Double) enemyLocation.clone(); // la sorgente del proiettile è la posizione del nemico
@@ -138,7 +138,7 @@ public class WaveSurfing {
 	/*
 	 * Per ogni onda, calcolo la distanza dalla mia posizione alla
 	 * sorgente dell'onda (nemico). Se la distanza e' maggiore della
-	 * velocità del proiettile e minore di 50000, l'onda da navigare 
+	 * velocita'� del proiettile e minore di 50000, l'onda da navigare 
 	 * e' la corrente, che e' la piu' vicina. Infatti aggiorno closestDistance.
 	 * In pratica, navigo l'onda finche' non attraversa il centro del mio robot.
 	 * 
@@ -212,8 +212,8 @@ public class WaveSurfing {
 
 	public void onHitByBullet(HitByBulletEvent e) {
 		
-		/* Se l'array delle onde è vuoto, non abbiamo identificato l'onda
-		 * Se nn è vuoto, prendiamo le coordinate della posizione del proiettile
+		/* Se l'array delle onde e' vuoto, non abbiamo identificato l'onda
+		 * Se nn e' vuoto, prendiamo le coordinate della posizione del proiettile
 		 * e fra tutte le onde cerchiamo quella che potrebbe averci colpito
 		 * */
 		if (!enemyWaves.isEmpty()) {

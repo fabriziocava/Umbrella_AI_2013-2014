@@ -59,7 +59,7 @@ public class MinimumRiskMovement {
 		
 		if(mr.getGunTurnRemaining()==0 && myEnergy>1) {
 //			mr.setFire(Math.min(Math.min(myEnergy/6d, 1300d/distanceToTarget), target.energy/3d));
-			if(distanceToTarget<350)
+			if(distanceToTarget<400)
 				mr.setFire(optimalPower(distanceToTarget));
 		}
 		mr.setTurnGunRightRadians(Utils.normalRelativeAngle(Util.absoluteBearing(myLocation, target.location)-mr.getGunHeadingRadians()));
@@ -125,6 +125,8 @@ public class MinimumRiskMovement {
 		if(!target.alive || e.getDistance()<myLocation.distance(target.location)) {
 			target = enemy;
 		}
+//		if(mr.getOthers()==1)
+//			mr.setTurnGunLeftRadians(mr.getRadarTurnRemainingRadians());
 	}
 	
 	public void onRobotDeath(RobotDeathEvent e) {
