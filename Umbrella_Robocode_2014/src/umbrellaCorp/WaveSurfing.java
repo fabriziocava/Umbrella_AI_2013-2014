@@ -80,7 +80,7 @@ public class WaveSurfing {
 		
 		myLocation = new Point2D.Double(mr.getX(), mr.getY());
 		
-		// velocità perpendicolare al nemico, pari a 0 se si muove verso o si allontana da lui 
+		// velocita'� perpendicolare al nemico, pari a 0 se si muove verso o si allontana da lui 
 		double lateralVelocity = mr.getVelocity()*Math.sin(e.getBearingRadians());
 		double absBearings = e.getBearingRadians() + mr.getHeadingRadians();
 		
@@ -90,11 +90,11 @@ public class WaveSurfing {
 		surfDirections.add(0, new Integer((lateralVelocity>=0)?1:-1));
 		surfAbsBearings.add(0, new Double(absBearings+Math.PI));
 		
-		// è stato sparato un proiettile con potenza pari all'energy drop
+		// E' stato sparato un proiettile con potenza pari all'energy drop
 		double bulletPower = oppEnergy-e.getEnergy(); 
 		
 		//CREAZIONE ONDE quando viene sparato un proiettile 
-			// surfDirections.size()>=2 perchè 2 turn prima di poter vedere energy drop
+			// surfDirections.size()>=2 perche' 2 turn prima di poter vedere energy drop
 		if(bulletPower<=3 && bulletPower>=0.1 && surfDirections.size()>=2) {
 			
 			EnemyWave ew = new EnemyWave();
@@ -137,12 +137,12 @@ public class WaveSurfing {
 
 	/*
 	 * Per ogni onda, calcolo la distanza dalla mia posizione alla
-	 * sorgente dell'onda (nemico). Se la distanza è maggiore della
+	 * sorgente dell'onda (nemico). Se la distanza e' maggiore della
 	 * velocità del proiettile e minore di 50000, l'onda da navigare 
-	 * è la corrente, che è la più vicina. Infatti aggiorno closestDistance.
-	 * In pratica, navigo l'onda finchè non attraversa il centro del mio robot.
+	 * e' la corrente, che e' la piu' vicina. Infatti aggiorno closestDistance.
+	 * In pratica, navigo l'onda finche' non attraversa il centro del mio robot.
 	 * 
-	 * Con questo metodo si trova quindi l'onda più vicina che non ha ancora
+	 * Con questo metodo si trova quindi l'onda piu' vicina che non ha ancora
 	 * attraversato il nostro robot, e la restituisce all'algoritmo del movimento.
 	 * 
 	 */
@@ -165,11 +165,11 @@ public class WaveSurfing {
 	 * Data l'onda associata al proiettile e il punto dove siamo stati colpiti,
 	 * calcola l'indice nell'array delle statistiche per quel fattore.
 	 * 
-	 * OffsetAngle = è l'angolo corrente dal nostro robot alla sorgente dell'onda
+	 * OffsetAngle = e' l'angolo corrente dal nostro robot alla sorgente dell'onda
 	 * meno l'angolo originale dal nostro robot alla sorgente dell'onda (nell'istante
 	 * in cui viene sparato il proiettile).
-	 * Il GuessFactor è proprio quest'angolo diviso l'angolo di massima fuga moltiplicato
-	 * per la direzione (1 o -1, in modo da cambiare di segno se è -1)   
+	 * Il GuessFactor e' proprio quest'angolo diviso l'angolo di massima fuga moltiplicato
+	 * per la direzione (1 o -1, in modo da cambiare di segno se e' -1)   
 	 */
 	public static int getFactorIndex(EnemyWave ew, Point2D.Double targetLocation) {
 		double offsetAngle = (Util.absoluteBearing(ew.fireLocation, targetLocation) - ew.directAngle);
@@ -242,7 +242,7 @@ public class WaveSurfing {
 	
 	/* ALGORITMO PRECISE PREDICTION
 	 * Data l'onda che stiamo navigando e la direzione verso cui orbitare
-	 * (che è quella che noi prevediamo), l'algortimo permette di predire il punto in cui
+	 * (che e' quella che noi prevediamo), l'algortimo permette di predire il punto in cui
 	 * saremo quando l'onda ci intercetta.
 	 */
 
@@ -271,7 +271,7 @@ public class WaveSurfing {
 
 			moveAngle = Utils.normalRelativeAngle(moveAngle);
 
-			//maximum turn rate : non si può girare più di questo in un turno
+			//maximum turn rate : non si puo' girare piu' di questo in un turno
 			maxTurning = Math.PI/720d*(40d-3d*Math.abs(predictedVelocity));
 			predictedHeading = Utils.normalRelativeAngle(predictedHeading+Util.limit(-maxTurning, moveAngle, maxTurning));
 
@@ -302,7 +302,7 @@ public class WaveSurfing {
 	 * Prediciamo la nostra posizione quando l'onda ci intercetta per ogni direzioe dell'orbita
 	 * Una volta predetta la posizione, prendiamo il valore dall'array delle statistiche
 	 * in base al GuessFactor di quella posizione.
-	 * Scegliamo quindi la direzione più sicura in cui orbitare e applichiamo il wall smoothing ed il
+	 * Scegliamo quindi la direzione piu' sicura in cui orbitare e applichiamo il wall smoothing ed il
 	 * back-as-front per orbitare in quella direzione.
 	 * 
 	 * */

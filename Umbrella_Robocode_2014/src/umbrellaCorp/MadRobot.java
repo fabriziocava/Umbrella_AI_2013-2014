@@ -8,8 +8,10 @@ import robocode.util.Utils;
 
 public class MadRobot extends AdvancedRobot {
 	
-	WaveSurfing ws = new WaveSurfing(this);
-	GuessFactorTargeting gft = new GuessFactorTargeting(this);
+	private WaveSurfing ws = new WaveSurfing(this);
+	private GuessFactorTargeting gft = new GuessFactorTargeting(this);
+//	private AntiGravityMovement agm = new AntiGravityMovement(this);
+	private MinimumRiskMovement mrm = new MinimumRiskMovement(this);
 	
 	private final int HIT_MAX = 4;
 	private int currentHit = 0;
@@ -19,8 +21,15 @@ public class MadRobot extends AdvancedRobot {
 		setAdjustGunForRobotTurn(true);
 		setAdjustRadarForGunTurn(true);
 		ws.init();
+		mrm.init();
 		do {
-			turnRadarRight(Double.POSITIVE_INFINITY);
+			if(getOthers()>1) /*N VS N*/ {
+//				agm.doMove();
+				mrm.run();
+			}
+			else /*1 VS 1*/ {
+				turnRadarRight(Double.POSITIVE_INFINITY);
+			}
 		} while(true);
 	}
 	
@@ -41,7 +50,8 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onBulletHit(BulletHitEvent e) {
-		currentHit = 0;
+		if(getOthers()==1)
+			currentHit = 0;
 	}
 	
 	/*
@@ -50,7 +60,8 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onBulletMissed(BulletMissedEvent e) {
-		currentHit++;
+		if(getOthers()==1)
+			currentHit++;
 	}
 	
 	/*
@@ -59,7 +70,8 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onHitByBullet(HitByBulletEvent e) {
-		ws.onHitByBullet(e);
+		if(getOthers()==1)
+			ws.onHitByBullet(e);
 	}
 	
 	/*
@@ -68,12 +80,18 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onScannedRobot(ScannedRobotEvent e) {
-		ws.onScannedRobot(e);
-		gft.onScannedRobot(e);
-		if(currentHit>=HIT_MAX) {
-			goToAngle(e.getBearingRadians(), e.getDistance());
-			currentHit = 0;
-		}			
+		if(getOthers()>1) /*N VS N*/ {
+//			agm.onScannedRobot(e);
+			mrm.onScannedRobot(e);
+		}
+		else /*1 VS 1*/ {
+			ws.onScannedRobot(e);
+			gft.onScannedRobot(e);
+			if(currentHit>=HIT_MAX) {
+				goToAngle(e.getBearingRadians(), e.getDistance());
+				currentHit = 0;
+			}
+		}
 	}
 
 	/*
@@ -82,11 +100,13 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onHitRobot(HitRobotEvent e) {
-		if(e.getBearing()>-10 && e.getBearing()<10) {
-			fire(3);
-		}
-		if(e.isMyFault()) {
-			turnRight(10);
+		if(getOthers()==1) {
+			if(e.getBearing()>-10 && e.getBearing()<10) {
+				fire(3);
+			}
+			if(e.isMyFault()) {
+				turnRight(10);
+			}
 		}
 	}
 	
@@ -100,13 +120,28 @@ public class MadRobot extends AdvancedRobot {
 	}
 	
 	/*
+	 * ON ROBOT DEATH
+	 */
+	@Override
+	public void onRobotDeath(RobotDeathEvent e) {
+		if(getOthers()>1) {
+			mrm.onRobotDeath(e);
+		}
+	}
+	
+	/*
 	 * END_EVENT
 	 */
 	
 	@Override
 	public void onPaint(Graphics2D g) {
-		ws.onPaint(g);
-		gft.onPaint(g);
+		if(getOthers()>1) /*N VS N*/ {
+			mrm.onPaint(g);
+		}
+		else /*1 VS 1*/ {
+			ws.onPaint(g);
+			gft.onPaint(g);			
+		}
 	}
 	
 	
