@@ -59,7 +59,8 @@ public class MinimumRiskMovement {
 		
 		if(mr.getGunTurnRemaining()==0 && myEnergy>1) {
 //			mr.setFire(Math.min(Math.min(myEnergy/6d, 1300d/distanceToTarget), target.energy/3d));
-			mr.setFire(optimalPower(distanceToTarget));
+			if(distanceToTarget<350)
+				mr.setFire(optimalPower(distanceToTarget));
 		}
 		mr.setTurnGunRightRadians(Utils.normalRelativeAngle(Util.absoluteBearing(myLocation, target.location)-mr.getGunHeadingRadians()));
 		

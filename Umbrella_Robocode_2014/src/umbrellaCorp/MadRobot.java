@@ -10,7 +10,6 @@ public class MadRobot extends AdvancedRobot {
 	
 	private WaveSurfing ws = new WaveSurfing(this);
 	private GuessFactorTargeting gft = new GuessFactorTargeting(this);
-//	private AntiGravityMovement agm = new AntiGravityMovement(this);
 	private MinimumRiskMovement mrm = new MinimumRiskMovement(this);
 	
 	private final int HIT_MAX = 4;
@@ -24,7 +23,6 @@ public class MadRobot extends AdvancedRobot {
 		mrm.init();
 		do {
 			if(getOthers()>1) /*N VS N*/ {
-//				agm.doMove();
 				mrm.run();
 			}
 			else /*1 VS 1*/ {
@@ -81,7 +79,6 @@ public class MadRobot extends AdvancedRobot {
 	@Override
 	public void onScannedRobot(ScannedRobotEvent e) {
 		if(getOthers()>1) /*N VS N*/ {
-//			agm.onScannedRobot(e);
 			mrm.onScannedRobot(e);
 		}
 		else /*1 VS 1*/ {

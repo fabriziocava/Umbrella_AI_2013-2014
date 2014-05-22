@@ -1,5 +1,6 @@
 package umbrellaCorp;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -10,10 +11,12 @@ import robocode.util.Utils;
 
 class WaveBullet {
 		
-	private double startX, startY, startBearing, power;
+	public double startX, startY, startBearing, power;
 	private long fireTime;
-	private int direction;
+	public int direction;
 	private int[] returnSegment;	
+	public double enemyDistance;
+	public double gf;
 	
 	public WaveBullet(double x, double y, double bearing, double power, int direction, long time, int[] segment) {
 		this.startX = x;
@@ -91,12 +94,14 @@ public class GuessFactorTargeting {
 		int[] currentStats = stats;
 		
 		WaveBullet newWave = new WaveBullet(mr.getX(), mr.getY(), absBearing, power, direction, mr.getTime(), currentStats);
+		newWave.enemyDistance = e.getDistance();
 		
 		int bestIndex=(STATS_SIZE-1)/2;
 		for(int i=0; i<STATS_SIZE; i++)
 			if(currentStats[bestIndex]<currentStats[i])
 				bestIndex=i;
 		double guessFactor = (double) (bestIndex-(stats.length-1)/2)/((stats.length-1)/2);
+		newWave.gf = guessFactor;
 		double angleOffset = direction*guessFactor*Util.maxEscapeAngle(Util.bulletVelocity(power));
 		double gunAdjust = Utils.normalRelativeAngle(absBearing-mr.getGunHeadingRadians()+angleOffset);
 		mr.setTurnGunRightRadians(gunAdjust);
@@ -128,7 +133,34 @@ public class GuessFactorTargeting {
 
 
 	public void onPaint(Graphics2D g) {
+		WaveBullet wave = null;
+		try {
+			wave = waves.get(waves.size()-1);
+		} catch (Exception e) {
+			return;
+		}
+		g.setColor(Color.GREEN);
+		int enemyX = (int) Util.project(new Point2D.Double(wave.startX,
+				wave.startY), wave.startBearing, wave.enemyDistance).x;
+		int enemyY = (int) Util.project(new Point2D.Double(wave.startX,
+				wave.startY), wave.startBearing, wave.enemyDistance).y;
 
+		int enemyMEAX = (int) Util.project(new Point2D.Double(wave.startX,
+				wave.startY), wave.startBearing + Util.maxEscapeAngle(wave.power)
+				* wave.direction, wave.enemyDistance).x;
+		int enemyMEAY = (int) Util.project(new Point2D.Double(wave.startX,
+				wave.startY), wave.startBearing + Util.maxEscapeAngle(wave.power)
+				* wave.direction, wave.enemyDistance).y;
+
+		g.drawLine(enemyX, enemyY, enemyMEAX, enemyMEAY);
+
+		int bulletX = (int) Util.project(new Point2D.Double(wave.startX,
+				wave.startY), wave.startBearing + Util.maxEscapeAngle(Util.bulletVelocity(wave.power))
+				* wave.direction * wave.gf, wave.enemyDistance).x;
+		int bulletY = (int) Util.project(new Point2D.Double(wave.startX,
+				wave.startY), wave.startBearing + Util.maxEscapeAngle(Util.bulletVelocity(wave.power))
+				* wave.direction * wave.gf, wave.enemyDistance).y;
+		g.fillRect(bulletX, bulletY, 10, 10);
 	}
 		
 }
