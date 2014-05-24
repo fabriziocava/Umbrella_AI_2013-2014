@@ -54,9 +54,10 @@ public class MinimumRiskMovement {
 	public void run() {
 		myLocation = new Point2D.Double(mr.getX(), mr.getY());
 		myEnergy = mr.getEnergy();
-		//mr.turnRadarRightRadians(2*Math.PI);
+//		mr.turnRadarRightRadians(2*Math.PI);
 		if(target.alive && mr.getTime()>9)
 			doMovementAndGun();
+//		mr.execute();
 	}
 	
 	private void doMovementAndGun() {
@@ -113,7 +114,8 @@ public class MinimumRiskMovement {
 	/*
 	 * Funzione di rischio - Determina quanto e' rischioso andare in un punto.
 	 * Il rischio e' basato sull'energia del nemico
-	 * */
+	 * 
+	 */
 	
 	public static double riskEvaluation (Point2D.Double point, double addLast) {
 		double eval = addLast*0.08/point.distanceSq(lastLocation);

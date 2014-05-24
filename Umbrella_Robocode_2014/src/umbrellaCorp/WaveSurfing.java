@@ -95,7 +95,7 @@ public class WaveSurfing {
 		
 		//CREAZIONE ONDE quando viene sparato un proiettile 
 			// surfDirections.size()>=2 perche' 2 turn prima di poter vedere energy drop
-		if(bulletPower<=3 && bulletPower>=0.1 && surfDirections.size()>=2) {
+		if(bulletPower<=3 && bulletPower>=0.1 && surfDirections.size()>2) {
 			
 			EnemyWave ew = new EnemyWave();
 			
