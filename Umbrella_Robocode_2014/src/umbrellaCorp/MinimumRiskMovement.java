@@ -46,6 +46,7 @@ public class MinimumRiskMovement {
 		target = new Enemy();
 		nextLocation = myLocation;
 		lastLocation = myLocation;
+		mr.setTurnRadarRightRadians(Double.POSITIVE_INFINITY);
 		//battleField= new Rectangle2D.Double(18, 18, mr.getBattleFieldWidth()-36, mr.getBattleFieldHeight()-36);
 		battleField = new Rectangle2D.Double(30, 30, mr.getBattleFieldWidth()-60, mr.getBattleFieldHeight()-60);
 	}
@@ -53,10 +54,9 @@ public class MinimumRiskMovement {
 	public void run() {
 		myLocation = new Point2D.Double(mr.getX(), mr.getY());
 		myEnergy = mr.getEnergy();
-		mr.turnRadarRightRadians(2*Math.PI);
+		//mr.turnRadarRightRadians(2*Math.PI);
 		if(target.alive && mr.getTime()>9)
 			doMovementAndGun();
-		mr.execute();
 	}
 	
 	private void doMovementAndGun() {
@@ -68,7 +68,7 @@ public class MinimumRiskMovement {
 		
 		if(mr.getGunTurnRemaining()==0 && myEnergy>1) {
 //			mr.setFire(Math.min(Math.min(myEnergy/6d, 1300d/distanceToTarget), target.energy/3d));
-			if(distanceToTarget<400)
+//			if(distanceToTarget<400)
 				mr.setFire(optimalPower(distanceToTarget));
 		}
 		mr.setTurnGunRightRadians(Utils.normalRelativeAngle(Util.absoluteBearing(myLocation, target.location)-mr.getGunHeadingRadians()));

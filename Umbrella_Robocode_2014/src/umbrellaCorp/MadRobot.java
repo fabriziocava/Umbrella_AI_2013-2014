@@ -28,6 +28,7 @@ public class MadRobot extends AdvancedRobot {
 			else /*1 VS 1*/ {
 				turnRadarRight(Double.POSITIVE_INFINITY);
 			}
+			execute();
 		} while(true);
 	}
 	
@@ -97,14 +98,7 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onHitRobot(HitRobotEvent e) {
-		if(getOthers()==1) {
-			if(e.getBearing()>-10 && e.getBearing()<10) {
-				fire(3);
-			}
-			if(e.isMyFault()) {
-				turnRight(10);
-			}
-		}
+		
 	}
 	
 	/*
@@ -124,6 +118,11 @@ public class MadRobot extends AdvancedRobot {
 		if(getOthers()>1) {
 			mrm.onRobotDeath(e);
 		}
+	}
+	
+	@Override
+	public void onWin(WinEvent e) {
+
 	}
 	
 	/*
