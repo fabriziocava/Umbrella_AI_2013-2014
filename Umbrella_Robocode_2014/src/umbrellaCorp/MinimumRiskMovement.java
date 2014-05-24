@@ -17,6 +17,13 @@ class Enemy {
 	public boolean alive;
 }
 
+
+/*
+ * Considera una serie di punti tra cui scegliere quello in cui andare.
+ * Ad ogni punto è infatti associato un valore che esprime il "fattore di rischio".
+ * Il robot si sposta quindi verso il punto con il più basso fattore di rischio.  
+ */
+
 public class MinimumRiskMovement {
 	
 	public static HashMap<String, Enemy> enemies = new HashMap<String, Enemy>();
@@ -100,6 +107,11 @@ public class MinimumRiskMovement {
 		 * END_MOVE
 		 */
 	}
+	
+	/*
+	 * Funzione di rischio - Determina quanto è rischioso andare in un punto.
+	 * Il rischio è basato sull'energia del nemico
+	 * */
 	
 	public static double riskEvaluation (Point2D.Double point, double addLast) {
 		double eval = addLast*0.08/point.distanceSq(lastLocation);
