@@ -46,6 +46,7 @@ public class MinimumRiskMovement {
 		target = new Enemy();
 		nextLocation = myLocation;
 		lastLocation = myLocation;
+		//battleField= new Rectangle2D.Double(18, 18, mr.getBattleFieldWidth()-36, mr.getBattleFieldHeight()-36);
 		battleField = new Rectangle2D.Double(30, 30, mr.getBattleFieldWidth()-60, mr.getBattleFieldHeight()-60);
 	}
 	
@@ -55,6 +56,7 @@ public class MinimumRiskMovement {
 		mr.turnRadarRightRadians(2*Math.PI);
 		if(target.alive && mr.getTime()>9)
 			doMovementAndGun();
+		mr.execute();
 	}
 	
 	private void doMovementAndGun() {
@@ -109,8 +111,8 @@ public class MinimumRiskMovement {
 	}
 	
 	/*
-	 * Funzione di rischio - Determina quanto è rischioso andare in un punto.
-	 * Il rischio è basato sull'energia del nemico
+	 * Funzione di rischio - Determina quanto e' rischioso andare in un punto.
+	 * Il rischio e' basato sull'energia del nemico
 	 * */
 	
 	public static double riskEvaluation (Point2D.Double point, double addLast) {

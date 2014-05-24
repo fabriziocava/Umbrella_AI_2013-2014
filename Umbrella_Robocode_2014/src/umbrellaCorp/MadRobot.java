@@ -113,7 +113,7 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onHitWall(HitWallEvent e) {
-		
+//		setBodyColor(Color.BLUE);
 	}
 	
 	/*
@@ -144,7 +144,7 @@ public class MadRobot extends AdvancedRobot {
 	
 	
 	public void init() {
-		setColors(Color.red,Color.white,Color.white);
+		setColors(Color.gray,Color.red,Color.white);
 	}
 	
 	public void goTo(double x, double y) {
