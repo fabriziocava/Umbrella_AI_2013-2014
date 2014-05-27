@@ -74,7 +74,7 @@ public class MinimumRiskMovement {
 		
 //		mr.turnRadarRightRadians(2*Math.PI);
 		
-		if(target.isAlive && mr.getTime()>9)
+		if(target.isAlive)
 			doMovementAndGun();
 //		mr.execute();
 	}
