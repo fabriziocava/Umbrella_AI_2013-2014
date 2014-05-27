@@ -14,7 +14,7 @@ import robocode.util.Utils;
 class Enemy {
 	public Point2D.Double location;
 	public double energy;
-	public boolean alive;
+	public boolean isAlive;
 }
 
 
@@ -26,14 +26,25 @@ class Enemy {
 
 public class MinimumRiskMovement {
 	
+	// ENEMIES
 	public static HashMap<String, Enemy> enemies = new HashMap<String, Enemy>();
-	private Enemy target;
+	private Enemy target; // target corrente
+	
+	// LOCATIONS
 	private Point2D.Double nextLocation;
 	public static Point2D.Double lastLocation;
 	public static Point2D.Double myLocation;
+	
+	// MY CURRENT ENERGY
 	public static double myEnergy;
 	
+	//BATTLEFIELD AREA
 	private Rectangle2D.Double battleField;
+	
+	// Points to evaluate, among to choose the safest one
+	final double GENERATED_POINTS = 200; 
+	// needed to understand whether to change nextLocation
+	final double LIMIT_DISTANCE = 15;
 	
 	MadRobot mr;
 	
@@ -42,11 +53,17 @@ public class MinimumRiskMovement {
 	}
 	
 	public void init() {
+		
 		myLocation = new Point2D.Double(mr.getX(), mr.getY());
 		target = new Enemy();
+		
 		nextLocation = myLocation;
 		lastLocation = myLocation;
+		
 		mr.setTurnRadarRightRadians(Double.POSITIVE_INFINITY);
+		
+		// Battlefield area smaller than the real one --> Needed to avoid hitting walls 
+		
 		//battleField= new Rectangle2D.Double(18, 18, mr.getBattleFieldWidth()-36, mr.getBattleFieldHeight()-36);
 		battleField = new Rectangle2D.Double(30, 30, mr.getBattleFieldWidth()-60, mr.getBattleFieldHeight()-60);
 	}
@@ -54,35 +71,31 @@ public class MinimumRiskMovement {
 	public void run() {
 		myLocation = new Point2D.Double(mr.getX(), mr.getY());
 		myEnergy = mr.getEnergy();
+		
 //		mr.turnRadarRightRadians(2*Math.PI);
-		if(target.alive && mr.getTime()>9)
+		
+		if(target.isAlive && mr.getTime()>9)
 			doMovementAndGun();
 //		mr.execute();
 	}
 	
 	private void doMovementAndGun() {
+		
+		//distance from my location to enemy target location
 		double distanceToTarget = myLocation.distance(target.location);
 		
-		/*
-		 * GUN
-		 */
+		// ---- GUN ----
 		
-		if(mr.getGunTurnRemaining()==0 && myEnergy>1) {
-//			mr.setFire(Math.min(Math.min(myEnergy/6d, 1300d/distanceToTarget), target.energy/3d));
-//			if(distanceToTarget<400)
-				mr.setFire(optimalPower(distanceToTarget));
-		}
-		mr.setTurnGunRightRadians(Utils.normalRelativeAngle(Util.absoluteBearing(myLocation, target.location)-mr.getGunHeadingRadians()));
+		setMyGun(distanceToTarget);
 		
-		/*
-		 * END_GUN
-		 */
+		// ---- END_GUN ----
 		
-		/*
-		 * MOVE
-		 */
+		
+		// ---- MOVE ----
+		
+		//distance from my location to nextLocation. 
 		double distanceToNextDestination = myLocation.distance(nextLocation);
-		if(distanceToNextDestination<15) {
+		if(distanceToNextDestination < LIMIT_DISTANCE) {
 			double addLast = 1-Math.rint(Math.pow(Math.random(), mr.getOthers()));
 			Point2D.Double testPoint;
 			int i=0;
@@ -91,7 +104,7 @@ public class MinimumRiskMovement {
 				if(battleField.contains(testPoint) && riskEvaluation(testPoint, addLast) < riskEvaluation(nextLocation, addLast)) {
 					nextLocation = testPoint;
 				}
-			} while(i++<200);
+			} while(i++ < GENERATED_POINTS);
 			lastLocation = myLocation;
 		} else {
 			double angle = Util.absoluteBearing(myLocation, nextLocation) - mr.getHeadingRadians();
@@ -110,6 +123,25 @@ public class MinimumRiskMovement {
 		 * END_MOVE
 		 */
 	}
+
+	/**
+	 * @param distanceToTarget the distance from myLocation to enemy targetLocation
+	 */
+	private void setMyGun(double distanceToTarget) {
+		
+		//If gun is not turning and myEnergy is >1
+		if(mr.getGunTurnRemaining()==0 && myEnergy>1) {
+//			mr.setFire(Math.min(Math.min(myEnergy/6d, 1300d/distanceToTarget), target.energy/3d));
+//			if(distanceToTarget<400)
+				mr.setFire(optimalPower(distanceToTarget));
+		}
+		
+		double absBearing = Util.absoluteBearing(myLocation, target.location);
+		double gunDirection = mr.getGunHeadingRadians();
+		double bearingRad = Utils.normalRelativeAngle(absBearing - gunDirection);
+		
+		mr.setTurnGunRightRadians(bearingRad);
+	}
 	
 	/*
 	 * Funzione di rischio - Determina quanto e' rischioso andare in un punto.
@@ -121,7 +153,7 @@ public class MinimumRiskMovement {
 		double eval = addLast*0.08/point.distanceSq(lastLocation);
 		for (String key:enemies.keySet()) {
 			Enemy enemy = enemies.get(key);
-			if(enemy.alive) {
+			if(enemy.isAlive) {
 				eval += Math.min(enemy.energy/myEnergy,2) * 
 						(1 + Math.abs(Math.cos(Util.absoluteBearing(point, myLocation) - Util.absoluteBearing(point, enemy.location)))) / point.distanceSq(enemy.location);
 			}
@@ -136,9 +168,9 @@ public class MinimumRiskMovement {
 			enemies.put(e.getName(), enemy);
 		}
 		enemy.energy = e.getEnergy();
-		enemy.alive = true;
+		enemy.isAlive = true;
 		enemy.location = Util.project(myLocation, mr.getHeadingRadians()+e.getBearingRadians(), e.getDistance());
-		if(!target.alive || e.getDistance()<myLocation.distance(target.location)) {
+		if(!target.isAlive || e.getDistance()<myLocation.distance(target.location)) {
 			target = enemy;
 		}
 //		if(mr.getOthers()==1)
@@ -146,7 +178,7 @@ public class MinimumRiskMovement {
 	}
 	
 	public void onRobotDeath(RobotDeathEvent e) {
-		enemies.get(e.getName()).alive=false;
+		enemies.get(e.getName()).isAlive=false;
 	}
 	
 	public double optimalPower(double distance) {

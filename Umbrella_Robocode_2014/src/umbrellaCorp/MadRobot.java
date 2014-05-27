@@ -16,7 +16,7 @@ public class MadRobot extends AdvancedRobot {
 	private int currentHit = 0;
 	
 	public void run() {
-		init();
+		init(); 
 		setAdjustGunForRobotTurn(true);
 		setAdjustRadarForGunTurn(true);
 		ws.init();
