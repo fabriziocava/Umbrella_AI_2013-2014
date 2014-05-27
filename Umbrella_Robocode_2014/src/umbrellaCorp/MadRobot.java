@@ -12,8 +12,10 @@ public class MadRobot extends AdvancedRobot {
 	private GuessFactorTargeting gft = new GuessFactorTargeting(this);
 	private MinimumRiskMovement mrm = new MinimumRiskMovement(this);
 	
-	private final int HIT_MAX = 4;
+	private final int HIT_MAX = 3;
 	private int currentHit = 0;
+	
+	public static int ENEMIES;
 	
 	public void run() {
 		init(); 
@@ -21,6 +23,7 @@ public class MadRobot extends AdvancedRobot {
 		setAdjustRadarForGunTurn(true);
 		ws.init();
 		mrm.init();
+		ENEMIES = getOthers();
 		do {
 			if(getOthers()>1) /*N VS N*/ {
 				mrm.run();

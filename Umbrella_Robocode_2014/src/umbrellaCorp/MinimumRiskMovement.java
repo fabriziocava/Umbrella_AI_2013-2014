@@ -46,6 +46,8 @@ public class MinimumRiskMovement {
 	// needed to understand whether to change nextLocation
 	final double LIMIT_DISTANCE = 15;
 	
+	final double THRESHOLD_DISTANCE = 300;
+	
 	MadRobot mr;
 	
 	public MinimumRiskMovement(MadRobot mr) {
@@ -128,19 +130,29 @@ public class MinimumRiskMovement {
 	 * @param distanceToTarget the distance from myLocation to enemy targetLocation
 	 */
 	private void setMyGun(double distanceToTarget) {
-		
-		//If gun is not turning and myEnergy is >1
-		if(mr.getGunTurnRemaining()==0 && myEnergy>1) {
-//			mr.setFire(Math.min(Math.min(myEnergy/6d, 1300d/distanceToTarget), target.energy/3d));
-//			if(distanceToTarget<400)
-				mr.setFire(optimalPower(distanceToTarget));
+		if(canFire(distanceToTarget)) {
+			//If gun is not turning and myEnergy is >1
+			if(mr.getGunTurnRemaining()==0 && myEnergy>1) {
+	//			mr.setFire(Math.min(Math.min(myEnergy/6d, 1300d/distanceToTarget), target.energy/3d));
+	//			if(distanceToTarget<400)
+					mr.setFire(optimalPower(distanceToTarget));
+			}
+			
+			double absBearing = Util.absoluteBearing(myLocation, target.location);
+			double gunDirection = mr.getGunHeadingRadians();
+			double bearingRad = Utils.normalRelativeAngle(absBearing - gunDirection);
+			
+			mr.setTurnGunRightRadians(bearingRad);
 		}
-		
-		double absBearing = Util.absoluteBearing(myLocation, target.location);
-		double gunDirection = mr.getGunHeadingRadians();
-		double bearingRad = Utils.normalRelativeAngle(absBearing - gunDirection);
-		
-		mr.setTurnGunRightRadians(bearingRad);
+	}
+	
+	public boolean canFire(double distanceToTarget) {
+		if(distanceToTarget<=THRESHOLD_DISTANCE)
+			return true;
+		double suggestedEnergy = 100*mr.getOthers()/MadRobot.ENEMIES;
+		if(mr.getEnergy()>=suggestedEnergy)
+			return true;
+		return false;
 	}
 	
 	/*
