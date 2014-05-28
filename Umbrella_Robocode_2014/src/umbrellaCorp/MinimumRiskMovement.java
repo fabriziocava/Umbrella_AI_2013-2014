@@ -7,6 +7,8 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import robocode.BulletHitEvent;
+import robocode.HitByBulletEvent;
 import robocode.RobotDeathEvent;
 import robocode.ScannedRobotEvent;
 import robocode.util.Utils;
@@ -42,11 +44,14 @@ public class MinimumRiskMovement {
 	private Rectangle2D.Double battleField;
 	
 	// Points to evaluate, among to choose the safest one
-	final double GENERATED_POINTS = 200; 
+	private final double GENERATED_POINTS = 200; 
 	// needed to understand whether to change nextLocation
-	final double LIMIT_DISTANCE = 15;
+	private final double LIMIT_DISTANCE = 15;
 	
-	final double THRESHOLD_DISTANCE = 300;
+	private final double THRESHOLD_DISTANCE = 300;
+	
+	private final double LIMIT_NOFIRE = 200;
+	private double countNoFire;
 	
 	MadRobot mr;
 	
@@ -68,6 +73,7 @@ public class MinimumRiskMovement {
 		
 		//battleField= new Rectangle2D.Double(18, 18, mr.getBattleFieldWidth()-36, mr.getBattleFieldHeight()-36);
 		battleField = new Rectangle2D.Double(30, 30, mr.getBattleFieldWidth()-60, mr.getBattleFieldHeight()-60);
+		countNoFire = 0;
 	}
 	
 	public void run() {
@@ -82,31 +88,45 @@ public class MinimumRiskMovement {
 	}
 	
 	private void doMovementAndGun() {
-		
-		//distance from my location to enemy target location
 		double distanceToTarget = myLocation.distance(target.location);
-		
-		// ---- GUN ----
-		
-		setMyGun(distanceToTarget);
-		
-		// ---- END_GUN ----
-		
-		
-		// ---- MOVE ----
-		
 		//distance from my location to nextLocation. 
 		double distanceToNextDestination = myLocation.distance(nextLocation);
+		move(distanceToTarget, distanceToNextDestination);
+		if(canFire(distanceToTarget)) {
+			setMyGun(distanceToTarget);
+		}
+		else {
+			countNoFire++;
+		}
+		double absBearing = Util.absoluteBearing(myLocation, target.location);
+		double gunDirection = mr.getGunHeadingRadians();
+		double bearingRad = Utils.normalRelativeAngle(absBearing - gunDirection);
+		
+		mr.setTurnGunRightRadians(bearingRad);
+	}
+
+	/**
+	 * @param distanceToTarget the distance from myLocation to enemy targetLocation
+	 */
+	private void setMyGun(double distanceToTarget) {
+		//If gun is not turning and myEnergy is >1
+		if(mr.getGunTurnRemaining()==0 && myEnergy>1) {
+//			mr.setFire(Math.min(Math.min(myEnergy/6d, 1300d/distanceToTarget), target.energy/3d));
+//			if(distanceToTarget<400)
+				mr.setFire(optimalPower(distanceToTarget));
+		}
+	}
+	
+	private void move(double distanceToTarget, double distanceToNextDestination) {
 		if(distanceToNextDestination < LIMIT_DISTANCE) {
 			double addLast = 1-Math.rint(Math.pow(Math.random(), mr.getOthers()));
 			Point2D.Double testPoint;
-			int i=0;
-			do {
+			for(int i=0; i<GENERATED_POINTS; i++) {
 				testPoint = Util.project(myLocation, 2*Math.PI*Math.random(), Math.min(distanceToTarget*0.8, 100 + 200*Math.random()));
 				if(battleField.contains(testPoint) && riskEvaluation(testPoint, addLast) < riskEvaluation(nextLocation, addLast)) {
 					nextLocation = testPoint;
 				}
-			} while(i++ < GENERATED_POINTS);
+			}
 			lastLocation = myLocation;
 		} else {
 			double angle = Util.absoluteBearing(myLocation, nextLocation) - mr.getHeadingRadians();
@@ -121,32 +141,11 @@ public class MinimumRiskMovement {
 			mr.setTurnRightRadians(angle = Utils.normalRelativeAngle(angle));
 			mr.setMaxVelocity(Math.abs(angle) > 1 ? 0 : 8d);
 		}
-		/*
-		 * END_MOVE
-		 */
-	}
-
-	/**
-	 * @param distanceToTarget the distance from myLocation to enemy targetLocation
-	 */
-	private void setMyGun(double distanceToTarget) {
-		if(canFire(distanceToTarget)) {
-			//If gun is not turning and myEnergy is >1
-			if(mr.getGunTurnRemaining()==0 && myEnergy>1) {
-	//			mr.setFire(Math.min(Math.min(myEnergy/6d, 1300d/distanceToTarget), target.energy/3d));
-	//			if(distanceToTarget<400)
-					mr.setFire(optimalPower(distanceToTarget));
-			}
-			
-			double absBearing = Util.absoluteBearing(myLocation, target.location);
-			double gunDirection = mr.getGunHeadingRadians();
-			double bearingRad = Utils.normalRelativeAngle(absBearing - gunDirection);
-			
-			mr.setTurnGunRightRadians(bearingRad);
-		}
 	}
 	
 	public boolean canFire(double distanceToTarget) {
+		if(countNoFire>=LIMIT_NOFIRE)
+			return true;
 		if(distanceToTarget<=THRESHOLD_DISTANCE)
 			return true;
 		double suggestedEnergy = 100*mr.getOthers()/MadRobot.ENEMIES;
@@ -191,6 +190,14 @@ public class MinimumRiskMovement {
 	
 	public void onRobotDeath(RobotDeathEvent e) {
 		enemies.get(e.getName()).isAlive=false;
+	}
+	
+	public void onHitByBullet(HitByBulletEvent e) {
+		countNoFire = 0;
+	}
+	
+	public void onBulletHit(BulletHitEvent e) {
+		countNoFire = 0;
 	}
 	
 	public double optimalPower(double distance) {
