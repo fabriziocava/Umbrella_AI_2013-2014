@@ -16,9 +16,7 @@ public class MadRobot extends AdvancedRobot {
 	private int currentHit = 0;
 	
 	public static int ENEMIES;
-	
-	private boolean isBlind;
-	
+		
 	public void run() {
 		init(); 
 		setAdjustGunForRobotTurn(true);
@@ -27,10 +25,7 @@ public class MadRobot extends AdvancedRobot {
 		mrm.init();
 		ENEMIES = getOthers();
 		do {
-//			if(isBlind) {
-//				turnRadarRight(Double.POSITIVE_INFINITY);
-//				searchRobot();
-//			} 
+			searchRobot();
 			if(getOthers()>1) /*N VS N*/ {
 				mrm.run();
 			}
@@ -94,7 +89,6 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onScannedRobot(ScannedRobotEvent e) {
-		isBlind = false;
 		if(getOthers()>1) /*N VS N*/ {
 			mrm.onScannedRobot(e);
 		}
@@ -106,7 +100,6 @@ public class MadRobot extends AdvancedRobot {
 				currentHit = 0;
 			}
 		}
-		isBlind = true;
 	}
 
 	/*
@@ -159,7 +152,6 @@ public class MadRobot extends AdvancedRobot {
 	
 	public void init() {
 		setColors(Color.gray,Color.red,Color.white);
-		isBlind = true;
 	}
 	
 	public void goTo(double x, double y) {
@@ -191,16 +183,19 @@ public class MadRobot extends AdvancedRobot {
 	}
 	
 	public void searchRobot() {
-		double battleFieldWidth = getBattleFieldWidth()-36;
-		double battleFieldHeight = getBattleFieldHeight()-36;
+		/*
+		 * da verificare
+		 */
+		double battleFieldWidth = getBattleFieldWidth()-100;
+		double battleFieldHeight = getBattleFieldHeight()-100;
 		double myX = getX();
 		double myY = getY();
 		if(myX>battleFieldWidth/2 && myY>battleFieldHeight/2)
-			goTo(36, 36); /*Angolo superiore sx*/
+			goTo(100, 100); /*Angolo superiore sx*/
 		else if(myX>battleFieldWidth/2 && myY<=battleFieldHeight/2)
-			goTo(36, battleFieldHeight); /*Angolo inferiore sx*/
+			goTo(100, battleFieldHeight); /*Angolo inferiore sx*/
 		else if(myX<=battleFieldWidth/2 && myY>battleFieldHeight/2)
-			goTo(getBattleFieldWidth(),36); /*Angolo superiore dx*/
+			goTo(getBattleFieldWidth(),100); /*Angolo superiore dx*/
 		else if(myX<=battleFieldWidth/2 && myY<=battleFieldHeight/2)
 			goTo(getBattleFieldWidth(),getBattleFieldHeight());
 		else /*Condizione di sicurezza*/ {
