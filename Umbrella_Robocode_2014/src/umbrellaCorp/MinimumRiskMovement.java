@@ -72,7 +72,7 @@ public class MinimumRiskMovement {
 		// Battlefield area smaller than the real one --> Needed to avoid hitting walls 
 		
 		//battleField= new Rectangle2D.Double(18, 18, mr.getBattleFieldWidth()-36, mr.getBattleFieldHeight()-36);
-		battleField = new Rectangle2D.Double(30, 30, mr.getBattleFieldWidth()-60, mr.getBattleFieldHeight()-60);
+		battleField = new Rectangle2D.Double(30, 30, MadRobot.battleFieldWidth-60, MadRobot.battleFieldHeight-60);
 		countNoFire = 0;
 	}
 	

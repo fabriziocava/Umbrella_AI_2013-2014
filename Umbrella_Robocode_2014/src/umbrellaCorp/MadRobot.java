@@ -8,9 +8,12 @@ import robocode.util.Utils;
 
 public class MadRobot extends AdvancedRobot {
 	
-	private WaveSurfing ws = new WaveSurfing(this);
-	private GuessFactorTargeting gft = new GuessFactorTargeting(this);
-	private MinimumRiskMovement mrm = new MinimumRiskMovement(this);
+	private WaveSurfing ws;
+	private GuessFactorTargeting gft;
+	private MinimumRiskMovement mrm;
+	
+	public static double battleFieldWidth;
+	public static double battleFieldHeight;
 	
 	private final int HIT_MAX = 3;
 	private int currentHit = 0;
@@ -21,11 +24,9 @@ public class MadRobot extends AdvancedRobot {
 		init(); 
 		setAdjustGunForRobotTurn(true);
 		setAdjustRadarForGunTurn(true);
-		ws.init();
-		mrm.init();
 		ENEMIES = getOthers();
 		do {
-			searchRobot();
+			exploreBattleField();
 			if(getOthers()>1) /*N VS N*/ {
 				mrm.run();
 			}
@@ -152,6 +153,13 @@ public class MadRobot extends AdvancedRobot {
 	
 	public void init() {
 		setColors(Color.gray,Color.red,Color.white);
+		battleFieldWidth = getBattleFieldWidth();
+		battleFieldHeight = getBattleFieldHeight();
+		ws = new WaveSurfing(this);
+		gft = new GuessFactorTargeting(this);
+		mrm = new MinimumRiskMovement(this);
+		ws.init();
+		mrm.init();
 	}
 	
 	public void goTo(double x, double y) {
@@ -182,25 +190,24 @@ public class MadRobot extends AdvancedRobot {
 		}
 	}
 	
-	public void searchRobot() {
+	public void exploreBattleField() {
 		/*
 		 * da verificare
 		 */
-		double battleFieldWidth = getBattleFieldWidth()-100;
-		double battleFieldHeight = getBattleFieldHeight()-100;
+		final double DIMENSION = 100;
+
+		double suggestedBattleFieldWidth = battleFieldWidth-DIMENSION;
+		double suggestedBattleFieldHeight = battleFieldHeight-DIMENSION;
 		double myX = getX();
 		double myY = getY();
-		if(myX>battleFieldWidth/2 && myY>battleFieldHeight/2)
-			goTo(100, 100); /*Angolo superiore sx*/
-		else if(myX>battleFieldWidth/2 && myY<=battleFieldHeight/2)
-			goTo(100, battleFieldHeight); /*Angolo inferiore sx*/
-		else if(myX<=battleFieldWidth/2 && myY>battleFieldHeight/2)
-			goTo(getBattleFieldWidth(),100); /*Angolo superiore dx*/
+		if(myX>=battleFieldWidth/2 && myY>=battleFieldHeight/2)
+			goTo(DIMENSION, DIMENSION); /*Angolo superiore sx*/
+		else if(myX>=battleFieldWidth/2 && myY<=battleFieldHeight/2)
+			goTo(DIMENSION, suggestedBattleFieldHeight); /*Angolo inferiore sx*/
+		else if(myX<=battleFieldWidth/2 && myY>=battleFieldHeight/2)
+			goTo(getBattleFieldWidth(),DIMENSION); /*Angolo superiore dx*/
 		else if(myX<=battleFieldWidth/2 && myY<=battleFieldHeight/2)
-			goTo(getBattleFieldWidth(),getBattleFieldHeight());
-		else /*Condizione di sicurezza*/ {
-			goTo(getBattleFieldWidth(),getBattleFieldHeight());
-		}
+			goTo(suggestedBattleFieldWidth,suggestedBattleFieldHeight); /*Angolo inferiore dx*/
 	}
 	
 }

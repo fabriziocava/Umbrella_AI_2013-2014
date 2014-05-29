@@ -73,7 +73,7 @@ public class WaveSurfing {
 	}
 	
 	public void init() {
-		battlefieldRect = new java.awt.geom.Rectangle2D.Double(18, 18, mr.getBattleFieldWidth()-36, mr.getBattleFieldHeight()-36);
+		battlefieldRect = new java.awt.geom.Rectangle2D.Double(18, 18, MadRobot.battleFieldWidth-36, MadRobot.battleFieldHeight-36);
 	}
 	
 	public void onScannedRobot(ScannedRobotEvent e) {
@@ -337,10 +337,10 @@ public class WaveSurfing {
 		double angle = startAngle;
 		double testX = botLocation.x + (Math.sin(angle)*WALL_STICK);
 		double testY = botLocation.y + (Math.cos(angle)*WALL_STICK);
-		double wallDistanceX = Math.min(botLocation.x-18, mr.getBattleFieldWidth()-botLocation.x-18);
-		double wallDistanceY = Math.min(botLocation.y-18, mr.getBattleFieldHeight()-botLocation.y-18);
-		double testDistanceX = Math.min(testX-18, mr.getBattleFieldWidth()-testX-18);
-		double testDistanceY = Math.min(testY-18, mr.getBattleFieldHeight()-testY-18);
+		double wallDistanceX = Math.min(botLocation.x-18, MadRobot.battleFieldWidth-botLocation.x-18);
+		double wallDistanceY = Math.min(botLocation.y-18, MadRobot.battleFieldHeight-botLocation.y-18);
+		double testDistanceX = Math.min(testX-18, MadRobot.battleFieldWidth-testX-18);
+		double testDistanceY = Math.min(testY-18, MadRobot.battleFieldHeight-testY-18);
 		
 		double adjacent = 0;		
 	    int g = 0; // because I'm paranoid about potential infinite loops
@@ -363,8 +363,8 @@ public class WaveSurfing {
 	 
 	        testX = botLocation.x + (Math.sin(angle)*WALL_STICK);
 	        testY = botLocation.y + (Math.cos(angle)*WALL_STICK);
-	        testDistanceX = Math.min(testX - 18, mr.getBattleFieldWidth() - testX - 18);
-	        testDistanceY = Math.min(testY - 18, mr.getBattleFieldHeight() - testY - 18);
+	        testDistanceX = Math.min(testX - 18, MadRobot.battleFieldWidth - testX - 18);
+	        testDistanceY = Math.min(testY - 18, MadRobot.battleFieldHeight - testY - 18);
 	    }
 	 
 	    return angle; // you may want to normalize this
