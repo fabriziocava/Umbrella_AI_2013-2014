@@ -50,8 +50,8 @@ public class MinimumRiskMovement {
 	
 	private final double THRESHOLD_DISTANCE = 300;
 	
-	private final double LIMIT_NOFIRE = 200;
-	private double countNoFire;
+	private final double LIMIT_INACTIVITY = 350;
+	private double countInactivity;
 	
 	MadRobot mr;
 	
@@ -73,7 +73,7 @@ public class MinimumRiskMovement {
 		
 		//battleField= new Rectangle2D.Double(18, 18, mr.getBattleFieldWidth()-36, mr.getBattleFieldHeight()-36);
 		battleField = new Rectangle2D.Double(30, 30, MadRobot.battleFieldWidth-60, MadRobot.battleFieldHeight-60);
-		countNoFire = 0;
+		countInactivity = 0;
 	}
 	
 	public void run() {
@@ -96,7 +96,7 @@ public class MinimumRiskMovement {
 			setMyGun(distanceToTarget);
 		}
 		else {
-			countNoFire++;
+			countInactivity++;
 		}
 		double absBearing = Util.absoluteBearing(myLocation, target.location);
 		double gunDirection = mr.getGunHeadingRadians();
@@ -110,7 +110,7 @@ public class MinimumRiskMovement {
 	 */
 	private void setMyGun(double distanceToTarget) {
 		//If gun is not turning and myEnergy is >1
-		if(mr.getGunTurnRemaining()==0 && myEnergy>1) {
+		if(mr.getGunTurnRemaining()==0) {
 //			mr.setFire(Math.min(Math.min(myEnergy/6d, 1300d/distanceToTarget), target.energy/3d));
 //			if(distanceToTarget<400)
 				mr.setFire(optimalPower(distanceToTarget));
@@ -144,7 +144,7 @@ public class MinimumRiskMovement {
 	}
 	
 	public boolean canFire(double distanceToTarget) {
-		if(countNoFire>=LIMIT_NOFIRE)
+		if(countInactivity>=LIMIT_INACTIVITY)
 			return true;
 		if(distanceToTarget<=THRESHOLD_DISTANCE)
 			return true;
@@ -190,14 +190,15 @@ public class MinimumRiskMovement {
 	
 	public void onRobotDeath(RobotDeathEvent e) {
 		enemies.get(e.getName()).isAlive=false;
+		countInactivity = 0;
 	}
 	
 	public void onHitByBullet(HitByBulletEvent e) {
-		countNoFire = 0;
+		countInactivity = 0;
 	}
 	
 	public void onBulletHit(BulletHitEvent e) {
-		countNoFire = 0;
+		countInactivity = 0;
 	}
 	
 	public double optimalPower(double distance) {

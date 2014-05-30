@@ -371,6 +371,10 @@ public class WaveSurfing {
 		
 	}
 	
+	public void run() {
+		mr.turnRadarRight(360.0);
+//		mr.turnRadarRight(Double.POSITIVE_INFINITY);
+	}
 
 	public void onPaint(Graphics2D g) {
 		g.setColor(Color.RED);

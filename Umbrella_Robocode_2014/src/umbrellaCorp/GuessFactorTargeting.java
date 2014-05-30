@@ -115,7 +115,6 @@ public class GuessFactorTargeting {
 				
 	}
 	
-	
 	public double optimalPower(double distance) {
 		final double minPower = 0.1;
 		final double maxPower = 3.0;
@@ -130,7 +129,6 @@ public class GuessFactorTargeting {
 			power=minPower;
 		return power;
 	}
-
 
 	public void onPaint(Graphics2D g) {
 		WaveBullet wave = null;

@@ -26,12 +26,11 @@ public class MadRobot extends AdvancedRobot {
 		setAdjustRadarForGunTurn(true);
 		ENEMIES = getOthers();
 		do {
-			exploreBattleField();
 			if(getOthers()>1) /*N VS N*/ {
 				mrm.run();
 			}
 			else /*1 VS 1*/ {
-				turnRadarRight(Double.POSITIVE_INFINITY);
+				ws.run();
 			}
 			execute();
 		} while(true);
@@ -77,6 +76,7 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onHitByBullet(HitByBulletEvent e) {
+		runAway();
 		if(getOthers()==1) /*1 VS 1*/
 			ws.onHitByBullet(e);
 		else /*N VS N*/ {
@@ -190,24 +190,19 @@ public class MadRobot extends AdvancedRobot {
 		}
 	}
 	
-	public void exploreBattleField() {
-		/*
-		 * da verificare
-		 */
+	public void runAway() {
+		
 		final double DIMENSION = 100;
 
 		double suggestedBattleFieldWidth = battleFieldWidth-DIMENSION;
 		double suggestedBattleFieldHeight = battleFieldHeight-DIMENSION;
-		double myX = getX();
-		double myY = getY();
-		if(myX>=battleFieldWidth/2 && myY>=battleFieldHeight/2)
-			goTo(DIMENSION, DIMENSION); /*Angolo superiore sx*/
-		else if(myX>=battleFieldWidth/2 && myY<=battleFieldHeight/2)
-			goTo(DIMENSION, suggestedBattleFieldHeight); /*Angolo inferiore sx*/
-		else if(myX<=battleFieldWidth/2 && myY>=battleFieldHeight/2)
-			goTo(getBattleFieldWidth(),DIMENSION); /*Angolo superiore dx*/
-		else if(myX<=battleFieldWidth/2 && myY<=battleFieldHeight/2)
-			goTo(suggestedBattleFieldWidth,suggestedBattleFieldHeight); /*Angolo inferiore dx*/
+//		double myX = getX();
+//		double myY = getY();
+		
+		double futureX = Math.random()*suggestedBattleFieldWidth;
+		double futureY = Math.random()*suggestedBattleFieldHeight;
+		
+		goTo(futureX, futureY);
 	}
 	
 }
