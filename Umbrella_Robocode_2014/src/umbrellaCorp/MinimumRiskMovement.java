@@ -164,6 +164,13 @@ public class MinimumRiskMovement {
 		double eval = addLast*0.08/point.distanceSq(lastLocation);
 		for (String key:enemies.keySet()) {
 			Enemy enemy = enemies.get(key);
+			// this is the heart 
+			//So I try to explain what I wanted to do:
+			// - Math.min(en.energy/myEnergy,2) is multiplied because en.energy/myEnergy is an indicator how dangerous an enemy is
+			// - Math.abs(Math.cos(calcAngle(myPos, p) - calcAngle(en.pos, p))) is bigger if the moving direction isn't good in relation
+			// to a certain bot. it would be more natural to use Math.abs(Math.cos(calcAngle(p, myPos) - calcAngle(en.pos, myPos)))
+			// but this wasn't going to give me good results
+			// - 1 / p.distanceSq(en.pos) is just the normal anti gravity thing
 			if(enemy.isAlive) {
 				eval += Math.min(enemy.energy/myEnergy,2) * 
 						(1 + Math.abs(Math.cos(Util.absoluteBearing(point, myLocation) - Util.absoluteBearing(point, enemy.location)))) / point.distanceSq(enemy.location);
