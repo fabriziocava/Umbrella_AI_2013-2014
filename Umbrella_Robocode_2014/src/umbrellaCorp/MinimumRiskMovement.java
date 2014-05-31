@@ -144,7 +144,7 @@ public class MinimumRiskMovement {
 	}
 	
 	public boolean canFire(double distanceToTarget) {
-		if(countInactivity>=LIMIT_INACTIVITY && mr.getEnergy()>=30.0)
+		if(countInactivity>=LIMIT_INACTIVITY && mr.getEnergy()>=50.0)
 			return true;
 		if(distanceToTarget<=THRESHOLD_DISTANCE)
 			return true;
