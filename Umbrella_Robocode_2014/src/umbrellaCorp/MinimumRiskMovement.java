@@ -83,11 +83,11 @@ public class MinimumRiskMovement {
 //		mr.turnRadarRightRadians(2*Math.PI);
 		
 		if(target.isAlive)
-			doMovementAndGun();
+			think();
 //		mr.execute();
 	}
 	
-	private void doMovementAndGun() {
+	private void think() {
 		double distanceToTarget = myLocation.distance(target.location);
 		//distance from my location to nextLocation. 
 		double distanceToNextDestination = myLocation.distance(nextLocation);
