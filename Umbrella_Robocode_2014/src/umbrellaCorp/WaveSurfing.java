@@ -14,11 +14,11 @@ import robocode.util.Utils;
 
 
 /* SI PUO' MIGLIORARE:
- 	- In choosing the wave to surf, adjust it to surf the one that will 
- 	  hit you first, instead of the closest one. 
- 	- Add evaluation for a stop position - you keep moving in the same 
- 	  orbit direction, but hit the brakes (setMaxVelocity(0)) when you
- 	  think that stop is much safer than moving. 
+ 	- Scegliere come onda da surfare quella che ci ha colpito 
+ 		per prima anziche quella piu vicina 
+ 	- Valutare una posizione di fermo: ci muoviamo nella stessa 
+ 		direzione, ma ci fermiamo (setMaxVelocity(0))
+ 	 	se Ã¨ piu sicuro che muoversi 
 */
 
 class EnemyWave {
@@ -39,7 +39,7 @@ public class WaveSurfing {
 	
 	private MadRobot mr;
 	public static int BINS = 47;	// firing angles suddivisi in bins discreti
-	public static double surf_stats[] = new double[BINS];
+	public static double SURF_STATS[] = new double[BINS];
 	
 	/*
 	 * Bisogna tenere traccia:
@@ -53,6 +53,7 @@ public class WaveSurfing {
 	public Point2D.Double myLocation;
 	public Point2D.Double enemyLocation;
 	
+	//HISTORY
 	public ArrayList<EnemyWave> enemyWaves;
 	public ArrayList<Integer> surfDirections;
 	public ArrayList<Double> surfAbsBearings;
@@ -72,6 +73,7 @@ public class WaveSurfing {
 		this.mr=mr;
 	}
 	
+	// Per ridurre la battlefield: 36x36 size del robot
 	public void init() {
 		battlefieldRect = new java.awt.geom.Rectangle2D.Double(18, 18, MadRobot.battleFieldWidth-36, MadRobot.battleFieldHeight-36);
 	}
@@ -80,29 +82,33 @@ public class WaveSurfing {
 		
 		myLocation = new Point2D.Double(mr.getX(), mr.getY());
 		
-		// velocita'  perpendicolare al nemico, pari a 0 se si muove verso o si allontana da lui 
+		// velocita' in dir perpendicolare al nemico, pari a 0 se si muove verso o si allontana da lui 
 		double lateralVelocity = mr.getVelocity()*Math.sin(e.getBearingRadians());
-		double absBearings = e.getBearingRadians() + mr.getHeadingRadians();
+		double absBearings = e.getBearingRadians() + mr.getHeadingRadians();	// absoluteBearing tra MasRobot e nemico rilevato
 		
-		//gira il radar a destra per il prox turno
+		//gira il radar a destra per il prox turno (nella dir del nemico)
 		mr.setTurnRadarRightRadians(Utils.normalRelativeAngle(absBearings-mr.getRadarHeadingRadians())*2);
 		
-		surfDirections.add(0, new Integer((lateralVelocity>=0)?1:-1));
+		Integer myDir = 1;
+		if(lateralVelocity < 0)
+			myDir = -1;
+		
+		surfDirections.add(0, new Integer(myDir));
 		surfAbsBearings.add(0, new Double(absBearings+Math.PI));
 		
 		// E' stato sparato un proiettile con potenza pari all'energy drop
 		double bulletPower = oppEnergy-e.getEnergy(); 
 		
 		//CREAZIONE ONDE quando viene sparato un proiettile 
-			// surfDirections.size()>=2 perche' 2 turn prima di poter vedere energy drop
-		if(bulletPower<=3 && bulletPower>=0.1 && surfDirections.size()>2) {
+			// surfDirections.size()>=2 perche' 2 turni prima di poter vedere energy drop
+		if(bulletPower <= 3 && bulletPower >= 0.1 && surfDirections.size() > 2) {
 			
 			EnemyWave ew = new EnemyWave();
 			
 			// AGGIORNO LE VARIABILI RELATIVE AL PROIETTILE
 			ew.fireTime = mr.getTime()-1; // turno di gioco del nemico, precedente al mio
 			ew.bulletVelocity = Util.bulletVelocity(bulletPower);
-			ew.distanceTraveled = Util.bulletVelocity(bulletPower); // la distanza percorsa e' uguale alla velocita'  del proiettile?
+			ew.distanceTraveled = Util.bulletVelocity(bulletPower); // la distanza percorsa e' uguale alla velocita'ï¿½ del proiettile?
 			ew.direction = ((Integer) surfDirections.get(2)).intValue();
 			ew.directAngle = ((Double) surfAbsBearings.get(2)).doubleValue();
 			ew.fireLocation = (Point2D.Double) enemyLocation.clone(); // la sorgente del proiettile Ã¨ la posizione del nemico
@@ -138,7 +144,7 @@ public class WaveSurfing {
 	/*
 	 * Per ogni onda, calcolo la distanza dalla mia posizione alla
 	 * sorgente dell'onda (nemico). Se la distanza e' maggiore della
-	 * velocita'  del proiettile e minore di 50000, l'onda da navigare 
+	 * velocita'ï¿½ del proiettile e minore di 50000, l'onda da navigare 
 	 * e' la corrente, che e' la piu' vicina. Infatti aggiorno closestDistance.
 	 * In pratica, navigo l'onda finche' non attraversa il centro del mio robot.
 	 * 
@@ -198,7 +204,7 @@ public class WaveSurfing {
 		* Gli altri bin si incrementano di meno (Bin Smoothing)
 		*/
 		for (int x=0; x<BINS; x++) {
-			surf_stats[x] += 1.0 / (Math.pow(index - x, 2) + 1);
+			SURF_STATS[x] += 1.0 / (Math.pow(index - x, 2) + 1);
 		}
 	}
 	
@@ -295,7 +301,7 @@ public class WaveSurfing {
 	 * */
 	public double checkDanger(EnemyWave surfWave, int direction) {
 		int index = getFactorIndex(surfWave, predictPosition(surfWave, direction));
-		return surf_stats[index];
+		return SURF_STATS[index];
 	}
 
 	/*

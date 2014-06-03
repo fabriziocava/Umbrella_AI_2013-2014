@@ -22,17 +22,17 @@ public class MadRobot extends AdvancedRobot {
 		
 	public void run() {
 		init(); 
-		setAdjustGunForRobotTurn(true);
-		setAdjustRadarForGunTurn(true);
+		setAdjustGunForRobotTurn(true); //Sets the gun to turn independent from the robot's turn. 
+		setAdjustRadarForGunTurn(true); //Sets the radar to turn independent from the gun's turn. 
 		ENEMIES = getOthers();
 		do {
-			if(getOthers()>1) /*N VS N*/ {
+			if(ENEMIES>1) /*N VS N*/ {
 				mrm.run();
 			}
 			else /*1 VS 1*/ {
 				ws.run();
 			}
-			execute();
+			execute(); //va chiamata per forza da un AdvancedRobot
 		} while(true);
 	}
 	
@@ -53,7 +53,7 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onBulletHit(BulletHitEvent e) {
-		if(getOthers()==1) /*1 VS 1*/
+		if(ENEMIES==1) /*1 VS 1*/
 			currentHit = 0;
 		else /*N VS N*/ {
 			mrm.onBulletHit(e);
@@ -66,7 +66,7 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onBulletMissed(BulletMissedEvent e) {
-		if(getOthers()==1)
+		if(ENEMIES==1)
 			currentHit++;
 	}
 	
@@ -77,7 +77,7 @@ public class MadRobot extends AdvancedRobot {
 	@Override
 	public void onHitByBullet(HitByBulletEvent e) {
 		runAway();
-		if(getOthers()==1) /*1 VS 1*/
+		if(ENEMIES==1) /*1 VS 1*/
 			ws.onHitByBullet(e);
 		else /*N VS N*/ {
 			mrm.onHitByBullet(e);
@@ -90,7 +90,7 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onScannedRobot(ScannedRobotEvent e) {
-		if(getOthers()>1) /*N VS N*/ {
+		if(ENEMIES>1) /*N VS N*/ {
 			mrm.onScannedRobot(e);
 		}
 		else /*1 VS 1*/ {
@@ -118,7 +118,7 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onHitWall(HitWallEvent e) {
-//		setBodyColor(Color.BLUE);
+//		setBodyColor(Color.BLUE);	//just to test
 	}
 	
 	/*
@@ -126,7 +126,7 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onRobotDeath(RobotDeathEvent e) {
-		if(getOthers()>1) {
+		if(ENEMIES>1) {
 			mrm.onRobotDeath(e);
 		}
 	}
@@ -142,7 +142,7 @@ public class MadRobot extends AdvancedRobot {
 	
 	@Override
 	public void onPaint(Graphics2D g) {
-		if(getOthers()>1) /*N VS N*/ {
+		if(ENEMIES>1) /*N VS N*/ {
 			mrm.onPaint(g);
 		}
 		else /*1 VS 1*/ {
@@ -162,23 +162,6 @@ public class MadRobot extends AdvancedRobot {
 		mrm.init();
 	}
 	
-	public void goTo(double x, double y) {
-		x -= getX();
-		y -= getY();
-		
-		double angleToTarget = Math.atan2(x, y);
-		double targetAngle = Utils.normalRelativeAngle(angleToTarget-getHeadingRadians());
-		double distance = Math.hypot(x, y);
-		double turnAngle = Math.atan(Math.tan(targetAngle));
-		setTurnRightRadians(turnAngle);
-		if(targetAngle==turnAngle) {
-			setAhead(distance);
-		}
-		else {
-			setBack(distance);
-		}
-	}
-	
 	public void goToAngle(double angleToTarget, double distance) {
 		double turnAngle = Math.atan(Math.tan(angleToTarget));
 		setTurnRightRadians(turnAngle);
@@ -190,6 +173,27 @@ public class MadRobot extends AdvancedRobot {
 		}
 	}
 	
+	public void goTo(double x, double y) {
+		
+		x -= getX();
+		y -= getY();
+		
+		double angleToTarget = Math.atan2(x, y);	//converte x,y in angolo
+		double targetAngle = Utils.normalRelativeAngle(angleToTarget-getHeadingRadians()); // tra -PI e PI
+		double distance = Math.hypot(x, y);
+	/*  double turnAngle = Math.atan(Math.tan(targetAngle));
+		setTurnRightRadians(turnAngle);
+		if(targetAngle==turnAngle) {
+			setAhead(distance);
+		}
+		else {
+			setBack(distance);
+		}
+			*/
+		goToAngle(targetAngle,distance);
+	}
+	
+		
 	public void runAway() {
 		
 		final double DIMENSION = 100;

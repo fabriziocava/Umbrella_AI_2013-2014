@@ -14,12 +14,12 @@ public class Util {
         return angle;
     }
 	
-    public static Point2D.Double project(Point2D.Double sourceLocation,
-            double angle, double length) {
-            return new Point2D.Double(sourceLocation.x + Math.sin(angle) * length,
-                sourceLocation.y + Math.cos(angle) * length);
+	//per proiettare il punto
+    public static Point2D.Double project(Point2D.Double sourceLocation, double angle, double length) {
+            return new Point2D.Double(sourceLocation.x + Math.sin(angle) * length, sourceLocation.y + Math.cos(angle) * length);
         }
      
+    //restituisce l'angolo dopo la conversione in coord polari
     public static double absoluteBearing(Point2D.Double source, Point2D.Double target) {
         return Math.atan2(target.x - source.x, target.y - source.y);
     }
@@ -28,17 +28,18 @@ public class Util {
         return Math.max(min, Math.min(value, max));
     }
  
+    //Restituisce la velocita del proiettile a partire dalla potenza
     public static double bulletVelocity(double power) {
         return (20.0 - (3.0*power));
     }
  
+    // ampiezza massima dell'angolo da cui si potrebbe colpire il nemico
     public static double maxEscapeAngle(double velocity) {
         return Math.asin(8.0/velocity);
     }
  
     public static void setBackAsFront(MadRobot robot, double goAngle) {
-        double angle =
-            Utils.normalRelativeAngle(goAngle - robot.getHeadingRadians());
+        double angle = Utils.normalRelativeAngle(goAngle - robot.getHeadingRadians());
         if (Math.abs(angle) > (Math.PI/2)) {
             if (angle < 0) {
                 robot.setTurnRightRadians(Math.PI + angle);
