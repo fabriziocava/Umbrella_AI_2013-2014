@@ -100,18 +100,18 @@ public class GuessFactorTargeting {
 		for(int i=0; i<STATS_SIZE; i++)
 			if(currentStats[bestIndex]<currentStats[i])
 				bestIndex=i;
-		double guessFactor = (double) (bestIndex-(stats.length-1)/2)/((stats.length-1)/2);
+		double guessFactor = (double) (bestIndex-(STATS_SIZE-1)/2)/((STATS_SIZE-1)/2);
 		newWave.gf = guessFactor;
 		double angleOffset = direction*guessFactor*Util.maxEscapeAngle(Util.bulletVelocity(power));
 		double gunAdjust = Utils.normalRelativeAngle(absBearing-mr.getGunHeadingRadians()+angleOffset);
 		mr.setTurnGunRightRadians(gunAdjust);
 		
-		if(mr.setFireBullet(power)!=null)
-			waves.add(newWave);
-		
-//		if(mr.getGunHeat()==0 && gunAdjust<Math.atan2(9, e.getDistance()) && mr.setFireBullet(power)!=null) {
+//		if(mr.setFireBullet(power)!=null)
 //			waves.add(newWave);
-//		}
+		
+		if(mr.getGunHeat()==0 && gunAdjust<Math.atan2(9, e.getDistance()) && mr.setFireBullet(power)!=null) {
+			waves.add(newWave);
+		}
 				
 	}
 	
