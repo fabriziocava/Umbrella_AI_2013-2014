@@ -18,7 +18,7 @@ import robocode.util.Utils;
  		per prima anziche quella piu vicina 
  	- Valutare una posizione di fermo: ci muoviamo nella stessa 
  		direzione, ma ci fermiamo (setMaxVelocity(0))
- 	 	se è piu sicuro che muoversi 
+ 	 	se e' piu sicuro che muoversi 
 */
 
 class EnemyWave {
@@ -209,10 +209,10 @@ public class WaveSurfing {
 	}
 	
 	/*
-	 * Quando un'onda ci colpisce, bisogna capire qual è.
-	 * Per ogni onda, controlliamo se la distanza che ha percorso è a 
-	 * 50 unità della nostra distanza corrente dalla sua sorgente.
-	 * Controlliamo anche che la sua velocità sia la stessa della velocità 
+	 * Quando un'onda ci colpisce, bisogna capire qual e'.
+	 * Per ogni onda, controlliamo se la distanza che ha percorso e' a 
+	 * 50 unita'� della nostra distanza corrente dalla sua sorgente.
+	 * Controlliamo anche che la sua velocita' sia la stessa della velocita'� 
 	 * del proiettile che ci ha colpiti.  
 	 * */
 

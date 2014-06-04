@@ -74,7 +74,7 @@ public class GuessFactorTargeting {
 		double ex = enemyLocation.x;
 		double ey = enemyLocation.y;
 		
-		for (int i=0; i<waves.size(); i++) {
+		for(int i=0; i<waves.size(); i++) {
 			WaveBullet currentWave = (WaveBullet) waves.get(i);
 			if (currentWave.checkHit(ex, ey, mr.getTime())) {
 				waves.remove(currentWave);
@@ -109,9 +109,9 @@ public class GuessFactorTargeting {
 		if(mr.setFireBullet(power)!=null)
 			waves.add(newWave);
 		
-		if(mr.getGunHeat()==0 && gunAdjust<Math.atan2(9, e.getDistance()) && mr.setFireBullet(power)!=null) {
-			waves.add(newWave);
-		}
+//		if(mr.getGunHeat()==0 && gunAdjust<Math.atan2(9, e.getDistance()) && mr.setFireBullet(power)!=null) {
+//			waves.add(newWave);
+//		}
 				
 	}
 	

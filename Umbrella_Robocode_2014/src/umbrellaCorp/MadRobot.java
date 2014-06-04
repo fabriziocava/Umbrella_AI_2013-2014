@@ -26,7 +26,7 @@ public class MadRobot extends AdvancedRobot {
 		setAdjustRadarForGunTurn(true); //Sets the radar to turn independent from the gun's turn. 
 		ENEMIES = getOthers();
 		do {
-			if(ENEMIES>1) /*N VS N*/ {
+			if(getOthers()>1) /*N VS N*/ {
 				mrm.run();
 			}
 			else /*1 VS 1*/ {
@@ -53,7 +53,7 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onBulletHit(BulletHitEvent e) {
-		if(ENEMIES==1) /*1 VS 1*/
+		if(getOthers()==1) /*1 VS 1*/
 			currentHit = 0;
 		else /*N VS N*/ {
 			mrm.onBulletHit(e);
@@ -66,7 +66,7 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onBulletMissed(BulletMissedEvent e) {
-		if(ENEMIES==1)
+		if(getOthers()==1)
 			currentHit++;
 	}
 	
@@ -77,7 +77,7 @@ public class MadRobot extends AdvancedRobot {
 	@Override
 	public void onHitByBullet(HitByBulletEvent e) {
 		runAway();
-		if(ENEMIES==1) /*1 VS 1*/
+		if(getOthers()==1) /*1 VS 1*/
 			ws.onHitByBullet(e);
 		else /*N VS N*/ {
 			mrm.onHitByBullet(e);
@@ -90,14 +90,14 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onScannedRobot(ScannedRobotEvent e) {
-		if(ENEMIES>1) /*N VS N*/ {
+		if(getOthers()>1) /*N VS N*/ {
 			mrm.onScannedRobot(e);
 		}
 		else /*1 VS 1*/ {
 			ws.onScannedRobot(e);
 			gft.onScannedRobot(e);
 			if(currentHit>=HIT_MAX) {
-				goToAngle(e.getBearingRadians(), e.getDistance());
+				goToByAngle(e.getBearingRadians(), e.getDistance());
 				currentHit = 0;
 			}
 		}
@@ -126,7 +126,7 @@ public class MadRobot extends AdvancedRobot {
 	 */
 	@Override
 	public void onRobotDeath(RobotDeathEvent e) {
-		if(ENEMIES>1) {
+		if(getOthers()>1) {
 			mrm.onRobotDeath(e);
 		}
 	}
@@ -142,7 +142,7 @@ public class MadRobot extends AdvancedRobot {
 	
 	@Override
 	public void onPaint(Graphics2D g) {
-		if(ENEMIES>1) /*N VS N*/ {
+		if(getOthers()>1) /*N VS N*/ {
 			mrm.onPaint(g);
 		}
 		else /*1 VS 1*/ {
@@ -162,7 +162,7 @@ public class MadRobot extends AdvancedRobot {
 		mrm.init();
 	}
 	
-	public void goToAngle(double angleToTarget, double distance) {
+	public void goToByAngle(double angleToTarget, double distance) {
 		double turnAngle = Math.atan(Math.tan(angleToTarget));
 		setTurnRightRadians(turnAngle);
 		if(angleToTarget==turnAngle) {
@@ -173,7 +173,7 @@ public class MadRobot extends AdvancedRobot {
 		}
 	}
 	
-	public void goTo(double x, double y) {
+	public void goToByPoint(double x, double y) {
 		
 		x -= getX();
 		y -= getY();
@@ -190,7 +190,7 @@ public class MadRobot extends AdvancedRobot {
 			setBack(distance);
 		}
 			*/
-		goToAngle(targetAngle,distance);
+		goToByAngle(targetAngle,distance);
 	}
 	
 		
@@ -200,13 +200,11 @@ public class MadRobot extends AdvancedRobot {
 
 		double suggestedBattleFieldWidth = battleFieldWidth-DIMENSION;
 		double suggestedBattleFieldHeight = battleFieldHeight-DIMENSION;
-//		double myX = getX();
-//		double myY = getY();
 		
 		double futureX = Math.random()*suggestedBattleFieldWidth;
 		double futureY = Math.random()*suggestedBattleFieldHeight;
 		
-		goTo(futureX, futureY);
+		goToByPoint(futureX, futureY);
 	}
 	
 }
