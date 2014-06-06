@@ -385,9 +385,12 @@ public class WaveSurfing {
 		double testDistanceY = Math.min(testY-18, MadRobot.battleFieldHeight-testY-18);
 		
 		double adjacent = 0;		
-	    int g = 0; // per evitare possibili loop
+	   
+		// per evitare possibili loop
+		int g = 0;
+	    final int maxIt = 25; 
 	 
-	    while (!battlefieldRect.contains(testX, testY) && g++ < 25) {
+	    while (!battlefieldRect.contains(testX, testY) && g++ < maxIt) {
 	        if (testDistanceY < 0 && testDistanceY < testDistanceX) {
 	           // wall smooth su muro Nord o Sud
 	            angle = ((int)((angle + (Math.PI/2)) / Math.PI)) * Math.PI;
