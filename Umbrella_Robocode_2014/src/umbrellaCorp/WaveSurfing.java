@@ -345,29 +345,33 @@ public class WaveSurfing {
 	 * 
 	 * */
 	public void doSurfing() {
+		int clockwise = 1;
+		int counter_clockwise = -1;
+		
 		EnemyWave surfWave = getClosestSurfableWave();
 		
 		if (surfWave==null) {
 			return;
 		}
 		
-		double dangerLeft = checkDanger(surfWave, -1);
-		double dangerRight = checkDanger(surfWave, 1);
+		//calcolo del pericolo, a seconda della direzione
+		double dangerLeft = checkDanger(surfWave, counter_clockwise);
+		double dangerRight = checkDanger(surfWave, clockwise);
 
 		double goAngle = Util.absoluteBearing(surfWave.fireLocation, myLocation);
 
 		if (dangerLeft < dangerRight) {
-			goAngle = wallSmoothing(myLocation, goAngle - (Math.PI/2), -1);
+			goAngle = wallSmoothing(myLocation, goAngle - (Math.PI/2), counter_clockwise);
 		} else {
-			goAngle = wallSmoothing(myLocation, goAngle + (Math.PI/2), 1);
+			goAngle = wallSmoothing(myLocation, goAngle + (Math.PI/2), clockwise);
 		}
 
-		Util.setBackAsFront(mr, goAngle);
+		Util.setBackAsFront(mr, goAngle); // per farlo muovere in goAngle
 	}
 
 	/*
 	 * ALGORITMO WALL SMOOTHING permette di andare vicino ai muri senza sbatterci contro
-	 * Permette quindi di evitare le collisioni senza bisogno di cambiare direzione ogni volta,
+	 * Evita quindi le collisioni senza bisogno di cambiare direzione ogni volta,
 	 * ma muovendosi lungo il muro.
 	 */
 	public double wallSmoothing(Point2D.Double botLocation, double startAngle, int orientation) {
@@ -381,15 +385,15 @@ public class WaveSurfing {
 		double testDistanceY = Math.min(testY-18, MadRobot.battleFieldHeight-testY-18);
 		
 		double adjacent = 0;		
-	    int g = 0; // because I'm paranoid about potential infinite loops
+	    int g = 0; // per evitare possibili loop
 	 
 	    while (!battlefieldRect.contains(testX, testY) && g++ < 25) {
 	        if (testDistanceY < 0 && testDistanceY < testDistanceX) {
-	            // wall smooth North or South wall
+	           // wall smooth su muro Nord o Sud
 	            angle = ((int)((angle + (Math.PI/2)) / Math.PI)) * Math.PI;
-	            adjacent = Math.abs(wallDistanceY);
+	            adjacent = Math.abs(wallDistanceY); 
 	        } else if (testDistanceX < 0 && testDistanceX <= testDistanceY) {
-	            // wall smooth East or West wall
+	            // wall smooth su muro Est o Ovest 
 	            angle = (((int)(angle / Math.PI)) * Math.PI) + (Math.PI/2);
 	            adjacent = Math.abs(wallDistanceX);
 	        }
