@@ -22,10 +22,10 @@ import robocode.util.Utils;
 */
 
 class EnemyWave {
-    Point2D.Double fireLocation;
-    long fireTime;
-    double bulletVelocity, directAngle, distanceTraveled;
-    int direction;
+    Point2D.Double fireLocation;	//da dove spara il nemico
+    long fireTime;					// turno in cui spara il nemico
+    double bulletVelocity, directAngle, distanceTraveled; // info del proiettile
+    int direction;	
 
     public EnemyWave() { 
     	
@@ -34,19 +34,21 @@ class EnemyWave {
 
 /* Il Wave Surfing permette di individuare le posizioni 
  * possibili di un proiettile
+ * NB - Non si possono vedere i proiettili in aria, quindi
+ * si fanno statistiche 
  */
 public class WaveSurfing {
 	
 	private MadRobot mr;
 	public static int BINS = 47;	// firing angles suddivisi in bins discreti
-	public static double SURF_STATS[] = new double[BINS];
+	public static double SURF_STATS[] = new double[BINS]; // statistica sulla probabilità che un nemico spari a diversi angoli
 	
 	/*
 	 * Bisogna tenere traccia:
 	 * - della nostra posizione e di quella del nemico
 	 * - del livello di energia del nemico (energy drop per sapere che e' stato sparato un proiettile)
 	 * - lista di onde su cui fare statistiche
-	 * - lista della nostra direzione, relativa ai turni giocati dal nemico
+	 * - lista della nostra direzione rispetto al nemico, relativa ai turni giocati
 	 * - lista degli angoli (in valore assoluto) rispetto ai nemici  
 	 */
 	
@@ -54,11 +56,11 @@ public class WaveSurfing {
 	public Point2D.Double enemyLocation;
 	
 	//HISTORY
-	public ArrayList<EnemyWave> enemyWaves;
-	public ArrayList<Integer> surfDirections;
-	public ArrayList<Double> surfAbsBearings;
+	public ArrayList<EnemyWave> enemyWaves;		//onde su cui fare statistiche: ogni volta che un'onda ci colpisce, impariamo per evitarla in futuro
+	public ArrayList<Integer> pastDirections;  //direzioni prese 
+	public ArrayList<Double> pastAbsBearings; //angoli 
 	
-	public static double oppEnergy = 100.0;
+	public static double enemyEnergy = 100.0;
 	
 	public static Rectangle2D.Double battlefieldRect;
 	
@@ -68,8 +70,8 @@ public class WaveSurfing {
 	
 	public WaveSurfing(MadRobot mr) {
 		enemyWaves = new ArrayList<EnemyWave>();
-		surfDirections = new ArrayList<Integer>();
-		surfAbsBearings = new ArrayList<Double>();
+		pastDirections = new ArrayList<Integer>();
+		pastAbsBearings = new ArrayList<Double>();
 		this.mr=mr;
 	}
 	
@@ -80,44 +82,54 @@ public class WaveSurfing {
 	
 	public void onScannedRobot(ScannedRobotEvent e) {
 		
+		//----------------- SETTING ----------------------
+		
 		myLocation = new Point2D.Double(mr.getX(), mr.getY());
 		
-		// velocita' in dir perpendicolare al nemico, pari a 0 se si muove verso o si allontana da lui 
-		double lateralVelocity = mr.getVelocity()*Math.sin(e.getBearingRadians());
-		double absBearings = e.getBearingRadians() + mr.getHeadingRadians();	// absoluteBearing tra MasRobot e nemico rilevato
+		//Per sapere la direzione del robot in base alla lateralVelocity: >= 0 dx(1), <0 sx (-1)
+		//velocita' in dir perpendicolare al nemico, pari a 0 se si muove verso o si allontana da lui 
 		
-		//gira il radar a destra per il prox turno (nella dir del nemico)
-		mr.setTurnRadarRightRadians(Utils.normalRelativeAngle(absBearings-mr.getRadarHeadingRadians())*2);
+		double lateralVelocity = mr.getVelocity()*Math.sin(e.getBearingRadians());
 		
 		Integer myDir = 1;
 		if(lateralVelocity < 0)
 			myDir = -1;
 		
-		surfDirections.add(0, new Integer(myDir));
-		surfAbsBearings.add(0, new Double(absBearings+Math.PI));
+		// absoluteBearing tra MadRobot e nemico rilevato
+		double absBearings = e.getBearingRadians() + mr.getHeadingRadians();	
+		
+		//gira il radar a destra per il prox turno (nella dir del nemico)
+		mr.setTurnRadarRightRadians(Utils.normalRelativeAngle(absBearings-mr.getRadarHeadingRadians())*2);	//normalizza tra -PI e PI
+		
+		pastDirections.add(0, new Integer(myDir));
+		pastAbsBearings.add(0, new Double(absBearings+Math.PI));
+		
+		
+		//----------------- ONDE ----------------------
+		
 		
 		// E' stato sparato un proiettile con potenza pari all'energy drop
-		double bulletPower = oppEnergy-e.getEnergy(); 
+		double bulletPower = enemyEnergy-e.getEnergy(); 
 		
 		//CREAZIONE ONDE quando viene sparato un proiettile 
-			// surfDirections.size()>=2 perche' 2 turni prima di poter vedere energy drop
-		if(bulletPower <= 3 && bulletPower >= 0.1 && surfDirections.size() > 2) {
+			// pastDirections.size()>2 perche' 2 turni prima di poter vedere energy drop
+		if(bulletPower <= 3 && bulletPower >= 0.1 && pastDirections.size() > 2) {
 			
-			EnemyWave ew = new EnemyWave();
+			EnemyWave ew = new EnemyWave(); 	//qui creo l'onda
 			
 			// AGGIORNO LE VARIABILI RELATIVE AL PROIETTILE
 			ew.fireTime = mr.getTime()-1; // turno di gioco del nemico, precedente al mio
 			ew.bulletVelocity = Util.bulletVelocity(bulletPower);
-			ew.distanceTraveled = Util.bulletVelocity(bulletPower); // la distanza percorsa e' uguale alla velocita'� del proiettile?
-			ew.direction = ((Integer) surfDirections.get(2)).intValue();
-			ew.directAngle = ((Double) surfAbsBearings.get(2)).doubleValue();
+			ew.distanceTraveled = Util.bulletVelocity(bulletPower); // la distanza percorsa e' uguale alla velocita' del proiettile?
+			ew.direction = ((Integer) pastDirections.get(2)).intValue();
+			ew.directAngle = ((Double) pastAbsBearings.get(2)).doubleValue();
 			ew.fireLocation = (Point2D.Double) enemyLocation.clone(); // la sorgente del proiettile è la posizione del nemico
 			
 			// AGGIUNGO L'ONDA
 			enemyWaves.add(ew);
 		}
 		//AGGIORNO L'ENERGIA e LA POSIZIONE DEL NEMICO una volta individuato, a partire dalla mia posizione
-		oppEnergy = e.getEnergy();
+		enemyEnergy = e.getEnergy();
 		enemyLocation = Util.project(myLocation, absBearings, e.getDistance()); // usa sorgente,angolo,lunghezza e mi dà un punto
 		
 		updateWaves();
@@ -133,9 +145,12 @@ public class WaveSurfing {
 	public void updateWaves() {
 		for (int x=0; x<enemyWaves.size(); x++) {
 			EnemyWave ew = (EnemyWave) enemyWaves.get(x);
+			
+			//aggiorno la distanza percorsa dal proiettile in base alla sua velocita
 			ew.distanceTraveled = (mr.getTime()-ew.fireTime)*ew.bulletVelocity;
+			
 			if (ew.distanceTraveled>myLocation.distance(ew.fireLocation)+50) {
-				enemyWaves.remove(x);
+				enemyWaves.remove(x);	//tolgo l'onda che non ci ha colpito
 				x--;
 			}
 		}
@@ -144,7 +159,7 @@ public class WaveSurfing {
 	/*
 	 * Per ogni onda, calcolo la distanza dalla mia posizione alla
 	 * sorgente dell'onda (nemico). Se la distanza e' maggiore della
-	 * velocita'� del proiettile e minore di 50000, l'onda da navigare 
+	 * velocita' del proiettile e minore di 50000, l'onda da navigare 
 	 * e' la corrente, che e' la piu' vicina. Infatti aggiorno closestDistance.
 	 * In pratica, navigo l'onda finche' non attraversa il centro del mio robot.
 	 * 
@@ -153,31 +168,35 @@ public class WaveSurfing {
 	 * 
 	 */
 	public EnemyWave getClosestSurfableWave() {
-		double closestDistance = 50000;
+		double closestDistance = Integer.MAX_VALUE; //50000;
 		EnemyWave surfWave = null;
 
 		for (int x=0; x<enemyWaves.size(); x++) {
 			EnemyWave ew = (EnemyWave) enemyWaves.get(x);
-			double distance = myLocation.distance(ew.fireLocation) - ew.distanceTraveled;
-			if (distance>ew.bulletVelocity && distance<closestDistance) {
+			double remainingDistance = myLocation.distance(ew.fireLocation) - ew.distanceTraveled;
+			
+			 //non considero le onde con distanza <= velocita
+			if (remainingDistance > ew.bulletVelocity && remainingDistance < closestDistance) {
 				surfWave = ew;
-				closestDistance = distance;
+				closestDistance = remainingDistance;
 			}
 		}
 		return surfWave;
 	}
 
 	/*
-	 * Data l'onda associata al proiettile e il punto dove siamo stati colpiti,
-	 * calcola l'indice nell'array delle statistiche per quel fattore.
-	 * 
-	 * OffsetAngle = e' l'angolo corrente dal nostro robot alla sorgente dell'onda
+	 * In base all'onda e al punto dove siamo stati colpiti,
+	 * calcola l'indice nell'array delle statistiche.
+	 */
+	
+	public static int getFactorIndex(EnemyWave ew, Point2D.Double targetLocation) {
+	/* OffsetAngle = e' l'angolo dal nostro robot alla sorgente dell'onda -nemico-
 	 * meno l'angolo originale dal nostro robot alla sorgente dell'onda (nell'istante
 	 * in cui viene sparato il proiettile).
+	 * 
 	 * Il GuessFactor e' proprio quest'angolo diviso l'angolo di massima fuga moltiplicato
 	 * per la direzione (1 o -1, in modo da cambiare di segno se e' -1)   
 	 */
-	public static int getFactorIndex(EnemyWave ew, Point2D.Double targetLocation) {
 		double offsetAngle = (Util.absoluteBearing(ew.fireLocation, targetLocation) - ew.directAngle);
 		double factor = Utils.normalRelativeAngle(offsetAngle) / Util.maxEscapeAngle(ew.bulletVelocity) * ew.direction;
 		
@@ -192,16 +211,18 @@ public class WaveSurfing {
 	/*
 	 * Data l'onda su cui viaggia il proiettile e il punto dove siamo stati colpiti
 	 * aggiorniamo l'array della statistica per riflettere il pericolo in quell'area.
+	 * 
 	 * Quando capiamo quale onda ci ha colpiti, possiamo usare la posizione del proiettile
-	 *  che ci ha colpiti e aggiornare la statistica. Basta prendere l'indice dell'array 
-	 *  restituito da getFactorIndex() per quel punto dell'onda e aggiornare con il Bin Smoothing
+	 * che ci ha colpiti e aggiornare la statistica.
+	 * Basta prendere l'indice dell'array 
+	 * restituito da getFactorIndex() per quel punto dell'onda e aggiornare con il Bin Smoothing
 	 */
-	public void logHit(EnemyWave ew, Point2D.Double targetLocation) {
+	public void logHitUpdatingStat(EnemyWave ew, Point2D.Double targetLocation) {
 		int index = getFactorIndex(ew, targetLocation);
 
 		/* VCS - Quando si registra un colpo di proiettile, si aggiorna
 		* di 1 il bin corrispondente a quell'angolatura da cui si spara.
-		* Gli altri bin si incrementano di meno (Bin Smoothing)
+		* Gli altri bin si incrementano di meno (Bin Smoothing): 1 , 1/2, 1/5 etc
 		*/
 		for (int x=0; x<BINS; x++) {
 			SURF_STATS[x] += 1.0 / (Math.pow(index - x, 2) + 1);
@@ -209,10 +230,10 @@ public class WaveSurfing {
 	}
 	
 	/*
-	 * Quando un'onda ci colpisce, bisogna capire qual e'.
+	 * Quando un'onda ci colpisce, bisogna capire qual e' quella che ci ha colpito.
 	 * Per ogni onda, controlliamo se la distanza che ha percorso e' a 
-	 * 50 unita'� della nostra distanza corrente dalla sua sorgente.
-	 * Controlliamo anche che la sua velocita' sia la stessa della velocita'� 
+	 * 50 unita' della nostra distanza corrente dalla sua sorgente.
+	 * Controlliamo anche che la sua velocita' sia la stessa della velocita' 
 	 * del proiettile che ci ha colpiti.  
 	 * */
 
@@ -240,7 +261,7 @@ public class WaveSurfing {
 			 * per aggiornare le statistiche.
 			 * Posso quindi rimuovere quell'onda
 			 **/ 
-				logHit(hitWave, hitBulletLocation);
+				logHitUpdatingStat(hitWave, hitBulletLocation);
 				enemyWaves.remove(enemyWaves.lastIndexOf(hitWave));
 			}
 		}
@@ -248,8 +269,8 @@ public class WaveSurfing {
 	
 	/* ALGORITMO PRECISE PREDICTION
 	 * Data l'onda che stiamo navigando e la direzione verso cui orbitare
-	 * (che e' quella che noi prevediamo), l'algortimo permette di predire il punto in cui
-	 * saremo quando l'onda ci intercetta.
+	 * l'algortimo permette di predire il punto in cui
+	 * andiamo quando l'onda ci intercetta.
 	 */
 
 	public Point2D.Double predictPosition(EnemyWave surfWave, int direction) {
@@ -259,11 +280,11 @@ public class WaveSurfing {
 		double maxTurning, moveAngle, moveDir;
 
 		//num di turni in futuro
+		final int numTick = 500;
 		int counter = 0; 
 		boolean intercepted = false;
 
 		/* Ad ogni turno predice l'angolo assoluto nel quale cerchiamo di muoverci.
-		 * Orbitiamo, ovvero stiamo perpendicolari all'angolo della sorgente dell'onda.
 		 * Una volta che abbiamo trovato l'angolo, lo passiamo al wallSmoothing
 		 * */
 		do {
@@ -282,22 +303,33 @@ public class WaveSurfing {
 			predictedHeading = Utils.normalRelativeAngle(predictedHeading+Util.limit(-maxTurning, moveAngle, maxTurning));
 
 			//se la velocità predetta e moveDir hanno diverso segno -> accelerazione
-			predictedVelocity += (predictedVelocity*moveDir<0 ? 2*moveDir : moveDir);
+			if(predictedVelocity*moveDir<0)
+				predictedVelocity += 2*moveDir;
+			else
+				predictedVelocity += moveDir;
+			
+			//predictedVelocity += (predictedVelocity*moveDir<0 ? 2*moveDir : moveDir);
 			predictedVelocity = Util.limit(-8, predictedVelocity, 8);
 
 			// nuova posizione predetta
 			predictedPosition = Util.project(predictedPosition, predictedHeading, predictedVelocity);
 			counter++;
 
-			if (predictedPosition.distance(surfWave.fireLocation) < surfWave.distanceTraveled + (counter*surfWave.bulletVelocity) + surfWave.bulletVelocity) {
+			// se la distanza tra la posizione predetta e la sorgente 
+			// e' < della distanza percorsa in un turno, allora 
+			// e' possibile che il proiettile ci colpisca
+			if (predictedPosition.distance(surfWave.fireLocation) < 
+					surfWave.distanceTraveled + (counter*surfWave.bulletVelocity) 
+					+ surfWave.bulletVelocity) {
 				intercepted = true;
 			}
-		} while (!intercepted && counter<500);
+		} while (!intercepted && counter < numTick);
 
 		return predictedPosition;
 	}
 
 	/* Ad ogni turno, controlliamo in quale direzione è più sicuro orbitare
+	 * in base al valore restituito dalla statistica
 	 * */
 	public double checkDanger(EnemyWave surfWave, int direction) {
 		int index = getFactorIndex(surfWave, predictPosition(surfWave, direction));
@@ -383,7 +415,7 @@ public class WaveSurfing {
 	}
 
 	public void onPaint(Graphics2D g) {
-		g.setColor(Color.RED);
+		g.setColor(Color.YELLOW);
 		for(EnemyWave wave : enemyWaves) {
 			draw(g, wave);
 		}
