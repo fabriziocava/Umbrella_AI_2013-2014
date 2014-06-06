@@ -113,7 +113,7 @@ public class MinimumRiskMovement {
 		if(mr.getGunTurnRemaining()==0) {
 //			mr.setFire(Math.min(Math.min(myEnergy/6d, 1300d/distanceToTarget), target.energy/3d));
 //			if(distanceToTarget<400)
-				mr.setFire(optimalPower(distanceToTarget));
+				mr.setFire(mr.optimalPower(distanceToTarget));
 		}
 	}
 	
@@ -207,22 +207,7 @@ public class MinimumRiskMovement {
 	public void onBulletHit(BulletHitEvent e) {
 		countInactivity = 0;
 	}
-	
-	public double optimalPower(double distance) {
-		final double minPower = 0.1;
-		final double maxPower = 3.0;
-		final double minDistance = 200;
-		double currentEnergy = mr.getEnergy();
-		double power;
-		if(distance<=minDistance)
-			power = maxPower;
-		else 
-			power = maxPower*minDistance/distance;
-		if(currentEnergy<power)
-			power=minPower;
-		return power;
-	}
-	
+		
 	public void onPaint(Graphics2D g) {
 		g.setColor(Color.GREEN);
 		g.drawRect((int)nextLocation.x, (int)nextLocation.y, 10, 10);

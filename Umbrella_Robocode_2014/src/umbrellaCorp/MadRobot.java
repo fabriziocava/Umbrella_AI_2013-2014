@@ -207,5 +207,20 @@ public class MadRobot extends AdvancedRobot {
 		goToByPoint(futureX, futureY);
 	}
 	
+	public double optimalPower(double distance) {
+		final double minPower = 0.1;
+		final double maxPower = 3.0;
+		final double minDistance = 200;
+		double currentEnergy = getEnergy();
+		double power;
+		if(distance<=minDistance)
+			power = maxPower;
+		else 
+			power = maxPower*minDistance/distance;
+		if(currentEnergy<power)
+			power=minPower;
+		return power;
+	}
+	
 }
 

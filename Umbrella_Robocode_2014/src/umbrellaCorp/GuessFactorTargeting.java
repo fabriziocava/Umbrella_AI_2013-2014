@@ -82,7 +82,7 @@ public class GuessFactorTargeting {
 			}
 		}
 
-		double power = Math.min(3, Math.max(.1, optimalPower(e.getDistance())));
+		double power = Math.min(3, Math.max(.1, mr.optimalPower(e.getDistance())));
 
 		if (e.getVelocity()!=0) {
 			if(Math.sin(e.getHeadingRadians()-absBearing)*e.getVelocity()<0)
@@ -113,21 +113,6 @@ public class GuessFactorTargeting {
 			waves.add(newWave);
 		}
 				
-	}
-	
-	public double optimalPower(double distance) {
-		final double minPower = 0.1;
-		final double maxPower = 3.0;
-		final double minDistance = 200;
-		double currentEnergy = mr.getEnergy();
-		double power;
-		if(distance<=minDistance)
-			power = maxPower;
-		else 
-			power = maxPower*minDistance/distance;
-		if(currentEnergy<power)
-			power=minPower;
-		return power;
 	}
 
 	public void onPaint(Graphics2D g) {
