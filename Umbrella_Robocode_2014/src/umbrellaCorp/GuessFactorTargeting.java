@@ -44,7 +44,7 @@ class WaveBullet {
 	
 /*
  * Guess fra -1 e 1 per capire dove sta andando il robot.
- * 	1 avanti fino al punto più lontano che può raggiungere andando a max velocità, 
+ * 	1 avanti fino al punto piï¿½ lontano che puï¿½ raggiungere andando a max velocitï¿½, 
  * -1 dietro,
  *  0 sta fermo 
  *  
@@ -54,7 +54,7 @@ public class GuessFactorTargeting {
 
 	private List<WaveBullet> waves = new ArrayList<WaveBullet>();
 	private MadRobot mr;
-	public static int STATS_SIZE=31;
+	public static final int STATS_SIZE=31;
 	private int[] stats = new int[STATS_SIZE];
 	private int direction = 1;
 	
