@@ -122,7 +122,7 @@ public class GuessFactorTargeting {
 		} catch (Exception e) {
 			return;
 		}
-		g.setColor(Color.GREEN);
+		g.setColor(Color.CYAN);
 		int enemyX = (int) Util.project(new Point2D.Double(wave.startX,
 				wave.startY), wave.startBearing, wave.enemyDistance).x;
 		int enemyY = (int) Util.project(new Point2D.Double(wave.startX,
